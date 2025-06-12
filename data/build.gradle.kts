@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlinx.serialization)
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -19,7 +22,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -40,4 +43,24 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // KotlinX
+    implementation(libs.kotlinx.serialization)
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Retrofit
+    implementation(libs.retrofit.retrofit)
+    implementation(libs.retrofit.converter.json)
+    implementation(libs.retrofit.interceptor)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    kapt(libs.hilt.compiler)
+
+    // OkHttp
+    api(libs.okhttp)
+
+    // Inject
+    implementation(libs.inject)
 }
