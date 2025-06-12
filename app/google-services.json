@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "538072394201",
+    "project_id": "quickfeed-2f4b4",
+    "storage_bucket": "quickfeed-2f4b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:538072394201:android:1f7a83cd79a54511ff51c8",
+        "android_client_info": {
+          "package_name": "com.nyinyi.quickfeed"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgnEjOwEYB2pWxQGHIkeOkuPA4-qAHsTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

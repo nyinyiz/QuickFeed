@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">QuickFeed</string>
+    <string name="app_logo_content_description">QuickFeed app icon</string>
+    <string name="welcome_message">By tapping \'Create Account\' or \'Sign In\' you can process the application.</string>
+    <string name="sign_up">Create Account</string>
+    <string name="sign_in">Sign In</string>
+    <string name="trouble_signing_in">Trouble signing in?</string>
+    <string name="toggle_theme_content_description">Theme toggle</string>
+    <string name="registration_failed_title">Registration failed</string>
+    <string name="registration_success_title">Registration Successful!</string>
+    <string name="registration_success_message">Your account has been created. Click OK to log in.</string>
 </resources>
