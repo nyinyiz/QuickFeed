@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "QuickFeed"
 include(":app")
- 
+include(":common")
+include(":data")
+include(":domain")
+include(":domain-model")
