@@ -49,6 +49,7 @@ timber = "5.0.1"
 accompanist = "0.32.0"
 runtimeAndroid = "1.8.1"
 coil = "2.4.0"
+materialIconsExtendedVersion = "1.7.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -109,7 +110,7 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 androidx-runtime-android = { group = "androidx.compose.runtime", name = "runtime-android", version.ref = "runtimeAndroid" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-
+material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtendedVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

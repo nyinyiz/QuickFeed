@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.nyinyi.quickfeed.ui.screen.login.LoginScreen
+import com.nyinyi.quickfeed.ui.screen.register.RegisterScreen
 import com.nyinyi.quickfeed.ui.screen.splash.SplashScreen
 import com.nyinyi.quickfeed.ui.screen.welcome.WelcomeScreen
 
@@ -26,11 +27,32 @@ fun SetUpNavGraph(
         composable<Routes.WelcomeScreen> {
             WelcomeScreen(
                 onToggleTheme = onToggleTheme,
+                onSignUpClick = {
+                    navController.navigate(Routes.RegisterScreen)
+                },
+                onSignInClick = {
+                    navController.navigate(Routes.LoginScreen)
+                },
             )
         }
 
         composable<Routes.LoginScreen> {
             LoginScreen()
+        }
+
+        composable<Routes.RegisterScreen> {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate(Routes.LoginScreen) {
+                        popUpTo(Routes.WelcomeScreen) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(Routes.LoginScreen)
+                },
+            )
         }
     }
 }
