@@ -6,4 +6,7 @@
     <string name="sign_in">Sign In</string>
     <string name="trouble_signing_in">Trouble signing in?</string>
     <string name="toggle_theme_content_description">Theme toggle</string>
+    <string name="registration_failed_title">Registration failed</string>
+    <string name="registration_success_title">Registration Successful!</string>
+    <string name="registration_success_message">Your account has been created. Click OK to log in.</string>
 </resources>
