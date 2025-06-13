@@ -8,9 +8,9 @@
     <string name="toggle_theme_content_description">Theme toggle</string>
     <string name="registration_failed_title">Registration failed</string>
     <string name="registration_success_title">Registration Successful!</string>
-    <string name="registration_success_message">Your account has been created. Click OK to log in.</string>
+    <string name="registration_success_message">Your account has been created. Click OK to sign in.</string>
     <string name="welcome_back_title">Welcome Back!</string>
-    <string name="login_to_continue_subtitle">Log in to your existing account.</string>
+    <string name="login_to_continue_subtitle">Sign in to your existing account.</string>
     <string name="email_address_label">Email Address</string>
     <string name="password_label">Password</string>
     <string name="email_icon_desc">Email Icon</string>
@@ -18,7 +18,7 @@
     <string name="hide_password_desc">Hide password</string>
     <string name="show_password_desc">Show password</string>
     <string name="forgot_password_link">Forgot Password?</string>
-    <string name="log_in_button">Log In</string>
+    <string name="log_in_button">Sign In</string>
     <string name="or_continue_with">Or continue with</string>
     <string name="sign_in_with_google_button">Sign In with Google</string>
     <string name="sign_in_with_google_desc">Sign In with Google</string>
@@ -29,7 +29,7 @@
     <string name="confirm_password_label">Confirm Password</string>
     <string name="sign_up_button">Sign Up</string>
     <string name="already_have_account_prompt">Already have an account?</string>
-    <string name="log_in_link">Log In</string>
+    <string name="log_in_link">Sign In</string>
     <string name="hide_confirm_password_desc">Hide confirm password</string>
     <string name="show_confirm_password_desc">Show confirm password</string>
     <string name="back_icon_desc">Back</string>

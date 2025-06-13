@@ -299,7 +299,11 @@ fun LoginContent(
                         defaultElevation = 4.dp,
                         pressedElevation = 6.dp,
                     ),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
