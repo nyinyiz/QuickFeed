@@ -44,6 +44,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,26 +68,63 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.R
+import com.nyinyi.quickfeed.ui.components.DialogState
+import com.nyinyi.quickfeed.ui.components.StatusDialog
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
-
-data class LoginScreenState(
-    val isLoading: Boolean = false,
-    val error: String? = null,
-)
 
 @Composable
 fun LoginScreen(
-    onLoginClicked: (String, String) -> Unit,
+    onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
     onForgotPassword: () -> Unit,
     backPressed: () -> Unit = {},
+    viewModel: LoginViewModel = hiltViewModel(),
 ) {
-    val uiState = LoginScreenState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    var dialogState by remember { mutableStateOf(DialogState()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { uiEvent ->
+            when (uiEvent) {
+                is LoginUiEvent.LoginSuccess -> {
+                    onLoginSuccess()
+                }
+
+                is LoginUiEvent.LoginError -> {
+                    dialogState =
+                        DialogState(
+                            show = true,
+                            title = context.getString(R.string.login_failed_title),
+                            messageString = uiEvent.message,
+                            isError = true,
+                        )
+                }
+
+                else -> {
+                }
+            }
+        }
+    }
+
+    if (dialogState.show) {
+        StatusDialog(
+            dialogState = dialogState,
+            onDismiss = {
+                dialogState = dialogState.copy(show = false)
+                if (dialogState.isError) {
+                    viewModel.clearError()
+                }
+            },
+        )
+    }
 
     LoginContent(
         uiState = uiState,
-        onLoginClicked = onLoginClicked,
+        onLoginClicked = viewModel::onSignIn,
         onNavigateToRegister = onNavigateToRegister,
         onForgotPassword = onForgotPassword,
         backPressed = backPressed,
@@ -94,7 +133,7 @@ fun LoginScreen(
 
 @Composable
 fun LoginContent(
-    uiState: LoginScreenState,
+    uiState: LoginUiState,
     backPressed: () -> Unit = {},
     onLoginClicked: (String, String) -> Unit,
     onNavigateToRegister: () -> Unit,
@@ -109,7 +148,7 @@ fun LoginContent(
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     val isLoading = uiState.isLoading
-    val errorMessage = uiState.error
+    val errorMessage = uiState.errorMessage
 
     Box(
         modifier =
@@ -370,7 +409,7 @@ fun LoginScreenLightPreview() {
         darkTheme = false,
     ) {
         LoginScreen(
-            onLoginClicked = { _, _ -> },
+            onLoginSuccess = {},
             onNavigateToRegister = {},
             onForgotPassword = {},
         )
@@ -384,7 +423,7 @@ fun LoginScreenDarkPreview() {
         darkTheme = true,
     ) {
         LoginScreen(
-            onLoginClicked = { _, _ -> },
+            onLoginSuccess = {},
             onNavigateToRegister = {},
             onForgotPassword = {},
         )

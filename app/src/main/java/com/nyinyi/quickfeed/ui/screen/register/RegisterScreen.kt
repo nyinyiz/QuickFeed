@@ -34,7 +34,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.ArrowBackIosNew
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -72,14 +71,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.R
+import com.nyinyi.quickfeed.ui.components.DialogState
+import com.nyinyi.quickfeed.ui.components.StatusDialog
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
-
-private data class DialogState(
-    val show: Boolean = false,
-    val title: String = "",
-    val messageString: String = "",
-    val isError: Boolean = false,
-)
 
 @Composable
 fun RegisterScreen(
@@ -118,7 +112,7 @@ fun RegisterScreen(
     }
 
     if (dialogState.show) {
-        RegistrationStatusDialog(
+        StatusDialog(
             dialogState = dialogState,
             onDismiss = {
                 dialogState = dialogState.copy(show = false)
@@ -139,31 +133,6 @@ fun RegisterScreen(
         onNavigateToLogin = onNavigateToLogin,
         onClearError = viewModel::clearError,
         backPressed = backPressed,
-    )
-}
-
-@Composable
-private fun RegistrationStatusDialog(
-    dialogState: DialogState,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = dialogState.title, style = MaterialTheme.typography.headlineSmall) },
-        text = {
-            Text(
-                text = dialogState.messageString,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        },
-        confirmButton = {
-            Button(onClick = onDismiss) {
-                Text(stringResource(android.R.string.ok))
-            }
-        },
-        containerColor = if (dialogState.isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
-        titleContentColor = if (dialogState.isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-        textContentColor = if (dialogState.isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
 

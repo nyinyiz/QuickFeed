@@ -48,33 +48,28 @@ class RegisterViewModel
             val trimmedPassword = password.trim()
             val trimmedConfirmPassword = confirmPassword.trim()
 
-            if (trimmedEmail.isBlank() || trimmedPassword.isBlank() || trimmedConfirmPassword.isBlank()) { // Also check confirmPassword for blank
-                // It's better to specify which field is blank if possible, or a general message
-                _uiState.update { it.copy(error = "All fields are required.", errorType = ErrorType.EMAIL) } // Or a new ErrorType.GENERAL_FIELD
+            if (trimmedEmail.isBlank() || trimmedPassword.isBlank() || trimmedConfirmPassword.isBlank()) {
+                _uiState.update { it.copy(error = "All fields are required.", errorType = ErrorType.EMAIL) }
                 return
             }
 
-            // Email Validation
             if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
                 _uiState.update { it.copy(error = "Invalid email address format.", errorType = ErrorType.EMAIL) }
                 return
             }
 
-            // Password length check (ensure this comes before checking if passwords match if length is a primary concern)
             if (trimmedPassword.length < 6) {
                 _uiState.update { it.copy(error = "Password must be at least 6 characters.", errorType = ErrorType.PASSWORD) }
                 return
             }
 
-            // Password confirmation check
             if (trimmedPassword != trimmedConfirmPassword) {
                 _uiState.update { it.copy(error = "Passwords do not match.", errorType = ErrorType.CONFIRM_PASSWORD) }
                 return
             }
 
             viewModelScope.launch(dispatcherProvider.io()) {
-                // Use IO dispatcher for network calls
-                _uiState.update { it.copy(isLoading = true, error = null, errorType = ErrorType.NONE) } // Clear previous errors
+                _uiState.update { it.copy(isLoading = true, error = null, errorType = ErrorType.NONE) }
 
                 val result = userSignUpUseCase(email, password)
 

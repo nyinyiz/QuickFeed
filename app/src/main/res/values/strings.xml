@@ -33,4 +33,6 @@
     <string name="hide_confirm_password_desc">Hide confirm password</string>
     <string name="show_confirm_password_desc">Show confirm password</string>
     <string name="back_icon_desc">Back</string>
+    <string name="login_failed_title">Login failed</string>
+    <string name="login_failed_message">Login failed. Please try again.</string>
 </resources>

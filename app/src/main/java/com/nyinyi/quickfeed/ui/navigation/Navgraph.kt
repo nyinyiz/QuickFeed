@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
+import com.nyinyi.quickfeed.ui.screen.home.HomeScreen
 import com.nyinyi.quickfeed.ui.screen.login.LoginScreen
 import com.nyinyi.quickfeed.ui.screen.register.RegisterScreen
 import com.nyinyi.quickfeed.ui.screen.splash.SplashScreen
@@ -51,11 +52,19 @@ fun SetUpNavGraph(
 
         composable<Routes.LoginScreen> {
             LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(
+                        route = Routes.HomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.WelcomeScreen) {
+                                    inclusive = true
+                                }
+                            },
+                    )
+                },
                 backPressed = {
                     navController.popBackStack()
-                },
-                onLoginClicked = { email, password ->
-                    // Handle login logic here
                 },
                 onNavigateToRegister = {
                     navController.navigate(
@@ -102,6 +111,10 @@ fun SetUpNavGraph(
                     )
                 },
             )
+        }
+
+        composable<Routes.HomeScreen> {
+            HomeScreen()
         }
     }
 }
