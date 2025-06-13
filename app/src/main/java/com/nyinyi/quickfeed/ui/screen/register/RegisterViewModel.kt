@@ -1,5 +1,6 @@
 package com.nyinyi.quickfeed.ui.screen.register
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nyinyi.common.utils.ConnectionObserver
@@ -43,21 +44,32 @@ class RegisterViewModel
             password: String,
             confirmPassword: String,
         ) {
-            if (email.isBlank() || password.isBlank()) {
-                _uiState.update { it.copy(error = "All fields are required.") }
-                return
-            }
-            if (password != confirmPassword) {
-                _uiState.update { it.copy(error = "Passwords do not match.") }
-                return
-            }
-            if (password.length < 6) {
-                _uiState.update { it.copy(error = "Password must be at least 6 characters.") }
+            val trimmedEmail = email.trim()
+            val trimmedPassword = password.trim()
+            val trimmedConfirmPassword = confirmPassword.trim()
+
+            if (trimmedEmail.isBlank() || trimmedPassword.isBlank() || trimmedConfirmPassword.isBlank()) {
+                _uiState.update { it.copy(error = "All fields are required.", errorType = ErrorType.EMAIL) }
                 return
             }
 
-            viewModelScope.launch {
-                _uiState.update { it.copy(isLoading = true, error = null) }
+            if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+                _uiState.update { it.copy(error = "Invalid email address format.", errorType = ErrorType.EMAIL) }
+                return
+            }
+
+            if (trimmedPassword.length < 6) {
+                _uiState.update { it.copy(error = "Password must be at least 6 characters.", errorType = ErrorType.PASSWORD) }
+                return
+            }
+
+            if (trimmedPassword != trimmedConfirmPassword) {
+                _uiState.update { it.copy(error = "Passwords do not match.", errorType = ErrorType.CONFIRM_PASSWORD) }
+                return
+            }
+
+            viewModelScope.launch(dispatcherProvider.io()) {
+                _uiState.update { it.copy(isLoading = true, error = null, errorType = ErrorType.NONE) }
 
                 val result = userSignUpUseCase(email, password)
 
@@ -77,7 +89,7 @@ class RegisterViewModel
         }
 
         fun clearError() {
-            _uiState.update { it.copy(error = null) }
+            _uiState.update { it.copy(error = null, errorType = ErrorType.NONE) }
         }
 
         override fun onCleared() {
@@ -89,7 +101,16 @@ class RegisterViewModel
 data class RegisterState(
     val isLoading: Boolean = false,
     val error: String? = null,
+    val errorType: ErrorType = ErrorType.NONE,
 )
+
+enum class ErrorType {
+    NONE,
+    EMAIL,
+    PASSWORD,
+    CONFIRM_PASSWORD,
+    AUTH,
+}
 
 sealed interface RegisterResultEvent {
     data object Success : RegisterResultEvent

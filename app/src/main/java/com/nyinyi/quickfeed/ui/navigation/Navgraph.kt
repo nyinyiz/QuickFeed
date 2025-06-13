@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
+import com.nyinyi.quickfeed.ui.screen.home.HomeScreen
 import com.nyinyi.quickfeed.ui.screen.login.LoginScreen
 import com.nyinyi.quickfeed.ui.screen.register.RegisterScreen
 import com.nyinyi.quickfeed.ui.screen.splash.SplashScreen
@@ -20,30 +21,98 @@ fun SetUpNavGraph(
         startDestination = Routes.SplashScreen,
     ) {
         composable<Routes.SplashScreen> {
-            SplashScreen {
-                navController.navigate(Routes.WelcomeScreen)
-            }
+            SplashScreen(
+                onNavigationToWelcome = {
+                    navController.navigate(
+                        route = Routes.WelcomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.SplashScreen) {
+                                    inclusive = false
+                                }
+                            },
+                    )
+                },
+                onNavigationToHome = {
+                    navController.navigate(
+                        route = Routes.HomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.SplashScreen) {
+                                    inclusive = false
+                                }
+                            },
+                    )
+                },
+            )
         }
 
         composable<Routes.WelcomeScreen> {
             WelcomeScreen(
                 onToggleTheme = onToggleTheme,
                 onSignUpClick = {
-                    navController.navigate(Routes.RegisterScreen)
+                    navController.navigate(
+                        route = Routes.RegisterScreen,
+                    )
                 },
                 onSignInClick = {
-                    navController.navigate(Routes.LoginScreen)
+                    navController.navigate(
+                        route = Routes.LoginScreen,
+                    )
                 },
             )
         }
 
         composable<Routes.LoginScreen> {
-            LoginScreen()
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(
+                        route = Routes.HomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.WelcomeScreen) {
+                                    inclusive = true
+                                }
+                            },
+                    )
+                },
+                backPressed = {
+                    navController.popBackStack()
+                },
+                onNavigateToRegister = {
+                    navController.navigate(
+                        route = Routes.RegisterScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.WelcomeScreen) {
+                                    inclusive = false
+                                }
+                            },
+                    )
+                },
+                onForgotPassword = {
+                    // Handle forgot password logic here
+                },
+            )
         }
 
         composable<Routes.RegisterScreen> {
             RegisterScreen(
+                backPressed = {
+                    navController.popBackStack()
+                },
                 onRegisterSuccess = {
+                    navController.navigate(
+                        route = Routes.LoginScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.WelcomeScreen) {
+                                    inclusive = false
+                                }
+                            },
+                    )
+                },
+                onNavigateToLogin = {
                     navController.navigate(
                         route = Routes.LoginScreen,
                         navOptions =
@@ -54,8 +123,21 @@ fun SetUpNavGraph(
                             },
                     )
                 },
-                onNavigateToLogin = {
-                    navController.navigate(Routes.LoginScreen)
+            )
+        }
+
+        composable<Routes.HomeScreen> {
+            HomeScreen(
+                logOutSuccess = {
+                    navController.navigate(
+                        route = Routes.WelcomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.HomeScreen) {
+                                    inclusive = true
+                                }
+                            },
+                    )
                 },
             )
         }

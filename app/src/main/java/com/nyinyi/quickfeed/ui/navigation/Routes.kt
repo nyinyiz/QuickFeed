@@ -16,7 +16,7 @@ sealed interface Routes {
     data object RegisterScreen : Routes
 
     @Serializable
-    data object TimeLineScreen : Routes
+    data object HomeScreen : Routes
 
     @Serializable
     data object ProfileScreen : Routes
