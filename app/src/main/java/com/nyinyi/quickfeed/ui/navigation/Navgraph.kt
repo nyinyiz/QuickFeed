@@ -21,17 +21,30 @@ fun SetUpNavGraph(
         startDestination = Routes.SplashScreen,
     ) {
         composable<Routes.SplashScreen> {
-            SplashScreen {
-                navController.navigate(
-                    route = Routes.WelcomeScreen,
-                    navOptions =
-                        navOptions {
-                            popUpTo(Routes.SplashScreen) {
-                                inclusive = false
-                            }
-                        },
-                )
-            }
+            SplashScreen(
+                onNavigationToWelcome = {
+                    navController.navigate(
+                        route = Routes.WelcomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.SplashScreen) {
+                                    inclusive = false
+                                }
+                            },
+                    )
+                },
+                onNavigationToHome = {
+                    navController.navigate(
+                        route = Routes.HomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.SplashScreen) {
+                                    inclusive = false
+                                }
+                            },
+                    )
+                },
+            )
         }
 
         composable<Routes.WelcomeScreen> {
@@ -114,7 +127,19 @@ fun SetUpNavGraph(
         }
 
         composable<Routes.HomeScreen> {
-            HomeScreen()
+            HomeScreen(
+                logOutSuccess = {
+                    navController.navigate(
+                        route = Routes.WelcomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.HomeScreen) {
+                                    inclusive = true
+                                }
+                            },
+                    )
+                },
+            )
         }
     }
 }
