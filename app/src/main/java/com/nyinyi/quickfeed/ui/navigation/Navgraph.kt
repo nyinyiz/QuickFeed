@@ -29,16 +29,38 @@ fun SetUpNavGraph(
             WelcomeScreen(
                 onToggleTheme = onToggleTheme,
                 onSignUpClick = {
-                    navController.navigate(Routes.RegisterScreen)
+                    navController.navigate(
+                        route = Routes.RegisterScreen,
+                    )
                 },
                 onSignInClick = {
-                    navController.navigate(Routes.LoginScreen)
+                    navController.navigate(
+                        route = Routes.LoginScreen,
+                    )
                 },
             )
         }
 
         composable<Routes.LoginScreen> {
-            LoginScreen()
+            LoginScreen(
+                onLoginClicked = { email, password ->
+                    // Handle login logic here
+                },
+                onNavigateToRegister = {
+                    navController.navigate(
+                        route = Routes.RegisterScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.WelcomeScreen) {
+                                    inclusive = false
+                                }
+                            },
+                    )
+                },
+                onForgotPassword = {
+                    // Handle forgot password logic here
+                },
+            )
         }
 
         composable<Routes.RegisterScreen> {
@@ -49,13 +71,21 @@ fun SetUpNavGraph(
                         navOptions =
                             navOptions {
                                 popUpTo(Routes.WelcomeScreen) {
-                                    inclusive = true
+                                    inclusive = false
                                 }
                             },
                     )
                 },
                 onNavigateToLogin = {
-                    navController.navigate(Routes.LoginScreen)
+                    navController.navigate(
+                        route = Routes.LoginScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.WelcomeScreen) {
+                                    inclusive = true
+                                }
+                            },
+                    )
                 },
             )
         }

@@ -47,10 +47,11 @@ fun SplashScreen(onAnimationFinished: () -> Unit) {
                             Brush.verticalGradient(
                                 colors =
                                     listOf(
-                                        MaterialTheme.colorScheme.onPrimary,
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.secondary,
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                        MaterialTheme.colorScheme.surface,
                                     ),
+                                startY = 0f,
+                                endY = Float.POSITIVE_INFINITY,
                             ),
                     ),
             contentAlignment = Alignment.Center,

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nyinyi.quickfeed.R
+import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
 import com.nyinyi.quickfeed.ui.theme.ThemeColors
 
 @Preview
@@ -44,11 +45,33 @@ fun WelcomeScreen(
     onSignUpClick: () -> Unit = {},
     onSignInClick: () -> Unit = {},
 ) {
+    QuickFeedTheme(
+        darkTheme = false,
+    ) {
+    }
     WelcomeContent(
         onToggleTheme = onToggleTheme,
         onSignUpClick = onSignUpClick,
         onSignInClick = onSignInClick,
     )
+}
+
+@Preview
+@Composable
+fun WelcomeScreenDarkTheme(
+    onToggleTheme: () -> Unit = {},
+    onSignUpClick: () -> Unit = {},
+    onSignInClick: () -> Unit = {},
+) {
+    QuickFeedTheme(
+        darkTheme = true,
+    ) {
+        WelcomeContent(
+            onToggleTheme = onToggleTheme,
+            onSignUpClick = onSignUpClick,
+            onSignInClick = onSignInClick,
+        )
+    }
 }
 
 @Composable
@@ -60,6 +83,7 @@ fun WelcomeContent(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         topBar = {
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -88,10 +112,11 @@ fun WelcomeContent(
                             Brush.verticalGradient(
                                 colors =
                                     listOf(
-                                        MaterialTheme.colorScheme.onPrimary,
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.secondary,
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                        MaterialTheme.colorScheme.surface,
                                     ),
+                                startY = 0f,
+                                endY = Float.POSITIVE_INFINITY,
                             ),
                     ).padding(paddingValues)
                     .padding(32.dp),
@@ -142,12 +167,13 @@ fun WelcomeContent(
             ) {
                 Button(
                     onClick = onSignUpClick,
-                    shape = RoundedCornerShape(50.dp),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.onPrimary,
-                            contentColor = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(12.dp),
+                    elevation =
+                        ButtonDefaults.buttonElevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 6.dp,
                         ),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier =
                         Modifier
                             .fillMaxWidth()
@@ -158,12 +184,8 @@ fun WelcomeContent(
 
                 OutlinedButton(
                     onClick = onSignInClick,
-                    shape = RoundedCornerShape(50.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimary),
-                    colors =
-                        ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                     modifier =
                         Modifier
                             .fillMaxWidth()
@@ -175,7 +197,6 @@ fun WelcomeContent(
                 Text(
                     text = stringResource(id = R.string.trouble_signing_in),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))
