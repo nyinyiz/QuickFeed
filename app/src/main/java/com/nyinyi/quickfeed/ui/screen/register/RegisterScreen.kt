@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.ArrowBackIosNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -79,6 +83,7 @@ private data class DialogState(
 
 @Composable
 fun RegisterScreen(
+    backPressed: () -> Unit,
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel(),
@@ -133,6 +138,7 @@ fun RegisterScreen(
         },
         onNavigateToLogin = onNavigateToLogin,
         onClearError = viewModel::clearError,
+        backPressed = backPressed,
     )
 }
 
@@ -164,6 +170,7 @@ private fun RegistrationStatusDialog(
 @Composable
 fun RegisterContent(
     uiState: RegisterState,
+    backPressed: () -> Unit,
     onSignUpClicked: (String, String, String) -> Unit,
     onNavigateToLogin: () -> Unit,
     onClearError: () -> Unit,
@@ -175,6 +182,7 @@ fun RegisterContent(
     var isConfirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     val isLoading = uiState.isLoading
     val generalErrorMessage = uiState.error
@@ -446,6 +454,23 @@ fun RegisterContent(
             }
             Spacer(modifier = Modifier.weight(1f))
         }
+
+        IconButton(
+            onClick = backPressed,
+            modifier =
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(
+                        top = statusBarPadding + 4.dp,
+                        start = 8.dp,
+                    ),
+        ) {
+            Icon(
+                Icons.Outlined.ArrowBackIosNew,
+                contentDescription = stringResource(R.string.back_icon_desc),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }
 
@@ -460,6 +485,7 @@ fun RegisterContentLightPreview() {
             onSignUpClicked = { _, _, _ -> },
             onNavigateToLogin = {},
             onClearError = {},
+            backPressed = {},
         )
     }
 }
@@ -480,6 +506,7 @@ fun RegisterContentDarkPreview() {
             onSignUpClicked = { _, _, _ -> },
             onNavigateToLogin = {},
             onClearError = {},
+            backPressed = {},
         )
     }
 }

@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -30,6 +33,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.ArrowBackIosNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -75,6 +79,7 @@ fun LoginScreen(
     onLoginClicked: (String, String) -> Unit,
     onNavigateToRegister: () -> Unit,
     onForgotPassword: () -> Unit,
+    backPressed: () -> Unit = {},
 ) {
     val uiState = LoginScreenState()
 
@@ -83,12 +88,14 @@ fun LoginScreen(
         onLoginClicked = onLoginClicked,
         onNavigateToRegister = onNavigateToRegister,
         onForgotPassword = onForgotPassword,
+        backPressed = backPressed,
     )
 }
 
 @Composable
 fun LoginContent(
     uiState: LoginScreenState,
+    backPressed: () -> Unit = {},
     onLoginClicked: (String, String) -> Unit,
     onNavigateToRegister: () -> Unit,
     onForgotPassword: () -> Unit,
@@ -98,6 +105,8 @@ fun LoginContent(
     var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
+
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     val isLoading = uiState.isLoading
     val errorMessage = uiState.error
@@ -330,6 +339,22 @@ fun LoginContent(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
+        }
+        IconButton(
+            onClick = backPressed,
+            modifier =
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(
+                        top = statusBarPadding + 4.dp,
+                        start = 8.dp,
+                    ),
+        ) {
+            Icon(
+                Icons.Outlined.ArrowBackIosNew,
+                contentDescription = stringResource(R.string.back_icon_desc),
+                tint = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

@@ -21,7 +21,15 @@ fun SetUpNavGraph(
     ) {
         composable<Routes.SplashScreen> {
             SplashScreen {
-                navController.navigate(Routes.WelcomeScreen)
+                navController.navigate(
+                    route = Routes.WelcomeScreen,
+                    navOptions =
+                        navOptions {
+                            popUpTo(Routes.SplashScreen) {
+                                inclusive = false
+                            }
+                        },
+                )
             }
         }
 
@@ -43,6 +51,9 @@ fun SetUpNavGraph(
 
         composable<Routes.LoginScreen> {
             LoginScreen(
+                backPressed = {
+                    navController.popBackStack()
+                },
                 onLoginClicked = { email, password ->
                     // Handle login logic here
                 },
@@ -65,6 +76,9 @@ fun SetUpNavGraph(
 
         composable<Routes.RegisterScreen> {
             RegisterScreen(
+                backPressed = {
+                    navController.popBackStack()
+                },
                 onRegisterSuccess = {
                     navController.navigate(
                         route = Routes.LoginScreen,
