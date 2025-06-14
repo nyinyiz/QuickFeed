@@ -7,7 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
 import com.nyinyi.quickfeed.ui.screen.home.HomeScreen
 import com.nyinyi.quickfeed.ui.screen.login.LoginScreen
+import com.nyinyi.quickfeed.ui.screen.profile.ProfileScreen
 import com.nyinyi.quickfeed.ui.screen.register.RegisterScreen
+import com.nyinyi.quickfeed.ui.screen.setting.SettingScreen
 import com.nyinyi.quickfeed.ui.screen.splash.SplashScreen
 import com.nyinyi.quickfeed.ui.screen.welcome.WelcomeScreen
 
@@ -138,6 +140,46 @@ fun SetUpNavGraph(
                                 }
                             },
                     )
+                },
+                onClickSetting = {
+                    navController.navigate(
+                        route = Routes.SettingsScreen,
+                    )
+                },
+                onClickProfile = {
+                    navController.navigate(
+                        route = Routes.ProfileScreen,
+                    )
+                },
+            )
+        }
+
+        composable<Routes.SettingsScreen> {
+            SettingScreen(
+                onThemeChange = { themeSetting ->
+                    onToggleTheme()
+                },
+                logOutSuccess = {
+                    navController.navigate(
+                        route = Routes.WelcomeScreen,
+                        navOptions =
+                            navOptions {
+                                popUpTo(Routes.SettingsScreen) {
+                                    inclusive = true
+                                }
+                            },
+                    )
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+
+        composable<Routes.ProfileScreen> {
+            ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 },
             )
         }
