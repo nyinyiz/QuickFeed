@@ -175,7 +175,11 @@ fun FormattedTweetText(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TwitterTimelineScreen(onClickCreatePost: () -> Unit) {
+fun TwitterTimelineScreen(
+    onClickCreatePost: () -> Unit,
+    onClickSettings: () -> Unit = {},
+    onClickProfile: () -> Unit = {},
+) {
     val tweets by fetchAllTweetsOnce().collectAsState(emptyList())
     val lazyListState = rememberLazyListState()
 
@@ -216,7 +220,6 @@ fun TwitterTimelineScreen(onClickCreatePost: () -> Unit) {
         }
     }
 
-    // Smooth animations
     val topBarAlpha by animateFloatAsState(
         targetValue = if (scrollBehavior.isVisible) 1f else 0f,
         animationSpec = tween(300),
@@ -268,7 +271,7 @@ fun TwitterTimelineScreen(onClickCreatePost: () -> Unit) {
                         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
                     ),
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onClickSettings) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = "More",
@@ -277,11 +280,11 @@ fun TwitterTimelineScreen(onClickCreatePost: () -> Unit) {
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onClickProfile) {
                         SimpleCircleProfileIcon(
                             icon = Icons.Default.Person,
                             size = 32.dp,
-                            backgroundColor = MaterialTheme.colorScheme.primary,
+                            backgroundColor = MaterialTheme.colorScheme.error,
                             iconTint = Color.White,
                         )
                     }
@@ -461,12 +464,19 @@ val sampleTweets =
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     logOutSuccess: () -> Unit,
+    onClickCreatePost: () -> Unit = {},
+    onClickSetting: () -> Unit = {},
+    onClickProfile: () -> Unit = {},
 ) {
-    TwitterTimelineScreen(onClickCreatePost = {
-        viewModel.logOut {
-            logOutSuccess()
-        }
-    })
+    TwitterTimelineScreen(
+        onClickCreatePost = {
+            viewModel.logOut {
+                logOutSuccess()
+            }
+        },
+        onClickSettings = onClickSetting,
+        onClickProfile = onClickProfile,
+    )
 }
 
 @Preview

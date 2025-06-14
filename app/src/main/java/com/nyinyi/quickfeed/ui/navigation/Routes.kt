@@ -20,4 +20,7 @@ sealed interface Routes {
 
     @Serializable
     data object ProfileScreen : Routes
+
+    @Serializable
+    data object SettingsScreen : Routes
 }
