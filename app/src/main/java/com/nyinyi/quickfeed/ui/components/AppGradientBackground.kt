@@ -28,7 +28,6 @@ fun AppGradientBackground(
                                 listOf(
                                     topColor,
                                     bottomColor,
-                                    bottomColor,
                                 ),
                             startY = 0f,
                             endY = Float.POSITIVE_INFINITY,

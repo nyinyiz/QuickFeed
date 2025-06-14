@@ -2,25 +2,58 @@ package com.nyinyi.quickfeed.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Option 2: Deep Blue/Purple with Bright Accent
-val Primary = Color(0xFF3F51B5) // Indigo (Could be a deep Purple #673AB7 or a rich Blue #1976D2)
-val OnPrimary = Color.White
-val PrimaryContainer = Color(0xFFC5CAE9) // Lighter Indigo
+// Light Theme Colors
+val Primary = Color(0xFF3D5CFF) // Electric Blue
+val OnPrimary = Color(0xFFFFFFFF)
 
-val Secondary = Color(0xFF00BCD4) // Bright Cyan/Teal Accent (Could be Pink #E91E63 or Lime #CDDC39)
-val OnSecondary = Color.Black // Or White depending on brightness
-val SecondaryContainer = Color(0xFFB2EBF2) // Lighter Cyan
+val PrimaryContainer = Color(0xFFE1E6FF)
+val OnPrimaryContainer = Color(0xFF001067)
 
-val Tertiary = Color(0xFF757575) // Neutral Gray for less important elements or text variations
-val OnTertiary = Color.White
-val TertiaryContainer = Color(0xFFE0E0E0) // Light Gray
+val Secondary = Color(0xFFFF4FD8) // Pink Magenta
+val OnSecondary = Color(0xFFFFFFFF)
 
-// Backgrounds and Surfaces
-val Background = Color(0xFFECEFF1) // Cool, very light gray (Blue Gray family)
-val OnBackground = Color(0xFF263238) // Dark Blue Gray
+val SecondaryContainer = Color(0xFFFFD6F2)
+val OnSecondaryContainer = Color(0xFF4A0036)
 
-val Surface = Color.White
-val OnSurface = Color(0xFF263238)
+val Tertiary = Color(0xFF7B61FF) // Lavender Purple
+val OnTertiary = Color(0xFFFFFFFF)
 
-val Error = Color(0xFFD32F2F) // Slightly less intense Red
-val OnError = Color.White
+val TertiaryContainer = Color(0xFFEDE8FF)
+val OnTertiaryContainer = Color(0xFF2E1A6F)
+
+val Background = Color(0xFFF9FAFF) // Soft white with blue tint
+val OnBackground = Color(0xFF1C1B1F)
+
+val Surface = Color(0xFFFFFFFF)
+val OnSurface = Color(0xFF1C1B1F)
+
+val Error = Color(0xFFFF6F61)
+val OnError = Color(0xFFFFFFFF)
+
+// Dark Theme Colors
+val DarkPrimary = Color(0xFF9CB3FF)
+val DarkOnPrimary = Color(0xFF000E4F)
+
+val DarkPrimaryContainer = Color(0xFF1D2D6B)
+val DarkOnPrimaryContainer = Color(0xFFE1E6FF)
+
+val DarkSecondary = Color(0xFFFF9FEA)
+val DarkOnSecondary = Color(0xFF50003A)
+
+val DarkSecondaryContainer = Color(0xFF800065)
+val DarkOnSecondaryContainer = Color(0xFFFFD6F2)
+
+val DarkTertiary = Color(0xFFD4C3FF)
+val DarkOnTertiary = Color(0xFF2E1A6F)
+
+val DarkTertiaryContainer = Color(0xFF4F3A8F)
+val DarkOnTertiaryContainer = Color(0xFFEDE8FF)
+
+val DarkBackground = Color(0xFF121212)
+val DarkOnBackground = Color(0xFFE6E6E9)
+
+val DarkSurface = Color(0xFF1E1E1E)
+val DarkOnSurface = Color(0xFFE6E6E9)
+
+val DarkError = Color(0xFFFFB4A8)
+val DarkOnError = Color(0xFF680003)

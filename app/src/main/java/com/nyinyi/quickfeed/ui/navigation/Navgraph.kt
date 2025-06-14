@@ -85,7 +85,7 @@ fun SetUpNavGraph(
                         navOptions =
                             navOptions {
                                 popUpTo(Routes.WelcomeScreen) {
-                                    inclusive = false
+                                    inclusive = true
                                 }
                             },
                     )

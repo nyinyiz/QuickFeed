@@ -9,24 +9,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 val LocalDarkTheme = compositionLocalOf { false }
+
 private val LightColorScheme =
     lightColorScheme(
         primary = Primary,
         onPrimary = OnPrimary,
         primaryContainer = PrimaryContainer,
-        onPrimaryContainer = OnPrimary,
+        onPrimaryContainer = OnPrimaryContainer,
         secondary = Secondary,
         onSecondary = OnSecondary,
         secondaryContainer = SecondaryContainer,
-        onSecondaryContainer = OnSecondary,
+        onSecondaryContainer = OnSecondaryContainer,
         tertiary = Tertiary,
         onTertiary = OnTertiary,
         tertiaryContainer = TertiaryContainer,
-        onTertiaryContainer = OnTertiary,
+        onTertiaryContainer = OnTertiaryContainer,
         background = Background,
         onBackground = OnBackground,
         surface = Surface,
@@ -37,24 +37,24 @@ private val LightColorScheme =
 
 private val DarkColorScheme =
     darkColorScheme(
-        primary = PrimaryContainer,
-        onPrimary = OnPrimary,
-        primaryContainer = Primary,
-        onPrimaryContainer = OnPrimary,
-        secondary = SecondaryContainer,
-        onSecondary = OnSecondary,
-        secondaryContainer = Secondary,
-        onSecondaryContainer = OnSecondary,
-        tertiary = TertiaryContainer,
-        onTertiary = OnTertiary,
-        tertiaryContainer = Tertiary,
-        onTertiaryContainer = OnTertiary,
-        background = Color(0xFF121212),
-        onBackground = Color(0xFFE0E0E0),
-        surface = Color(0xFF1E1E1E),
-        onSurface = Color(0xFFE0E0E0),
-        error = Error,
-        onError = OnError,
+        primary = DarkPrimary,
+        onPrimary = DarkOnPrimary,
+        primaryContainer = DarkPrimaryContainer,
+        onPrimaryContainer = DarkOnPrimaryContainer,
+        secondary = DarkSecondary,
+        onSecondary = DarkOnSecondary,
+        secondaryContainer = DarkSecondaryContainer,
+        onSecondaryContainer = DarkOnSecondaryContainer,
+        tertiary = DarkTertiary,
+        onTertiary = DarkOnTertiary,
+        tertiaryContainer = DarkTertiaryContainer,
+        onTertiaryContainer = DarkOnTertiaryContainer,
+        background = DarkBackground,
+        onBackground = DarkOnBackground,
+        surface = DarkSurface,
+        onSurface = DarkOnSurface,
+        error = DarkError,
+        onError = DarkOnError,
     )
 
 @Composable
