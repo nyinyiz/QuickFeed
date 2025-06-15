@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -23,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.R
 import com.nyinyi.quickfeed.ui.components.DefaultAppGradientBackground
 import com.nyinyi.quickfeed.ui.components.SimpleCircleProfileIcon
@@ -468,6 +471,26 @@ fun HomeScreen(
     onClickSetting: () -> Unit = {},
     onClickProfile: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.checkProfileCompletion()
+    }
+    if (uiState.userProfileNotCompleted) {
+        AlertDialog(
+            onDismissRequest = {
+            },
+            title = { Text("Complete Your Profile") },
+            text = { Text("Please complete your profile to continue enjoying the timeline experience.") },
+            confirmButton = {
+                TextButton(onClick = onClickProfile) {
+                    Text("Go to Profile")
+                }
+            },
+            dismissButton = null,
+        )
+    }
+
     TwitterTimelineScreen(
         onClickCreatePost = {
             viewModel.logOut {

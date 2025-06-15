@@ -95,7 +95,7 @@ class ProfileViewModel
                 result
                     .onSuccess {
                         _event.emit(ProfileEvent.SaveSuccess)
-                        loadUserProfile()
+                        checkProfileCompletion()
                     }.onFailure { e ->
                         _event.emit(ProfileEvent.SaveFailure(e.message ?: "Failed to save profile."))
                     }
