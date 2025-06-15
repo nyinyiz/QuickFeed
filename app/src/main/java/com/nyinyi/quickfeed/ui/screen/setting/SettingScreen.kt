@@ -1,5 +1,6 @@
 package com.nyinyi.quickfeed.ui.screen.setting
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -54,13 +56,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.nyinyi.quickfeed.R
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
 
 // Enum for theme options
@@ -76,10 +76,8 @@ fun SettingScreen(
     onNavigateBack: () -> Unit,
     onThemeChange: (ThemeSetting) -> Unit = {},
     logOutSuccess: () -> Unit = {},
-//    viewModel: SettingViewModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-//    val currentThemeSetting by viewModel.themeSetting.collectAsState()
     var showThemeDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -99,10 +97,17 @@ fun SettingScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier =
+                            Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back_icon_desc),
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 },
@@ -128,13 +133,6 @@ fun SettingScreen(
                             .replaceFirstChar { it.uppercase() },
                     onClick = { showThemeDialog = true },
                 )
-                // You could add dynamic color switch here if your app supports it
-                // SettingItemWithSwitch(
-                // icon = Icons.Default.ColorLens,
-                // title = "Dynamic Color",
-                // checked = isDynamicColorEnabled, // From ViewModel
-                // onCheckedChange = { viewModel.setDynamicColor(it) }
-                // )
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -151,7 +149,7 @@ fun SettingScreen(
                 SettingItem(
                     icon = Icons.AutoMirrored.Filled.Logout,
                     title = "Logout",
-                    onClick = { /* TODO: Implement logout logic */ },
+                    onClick = { logOutSuccess() },
                     titleColor = MaterialTheme.colorScheme.error, // Highlight logout
                 )
             }
