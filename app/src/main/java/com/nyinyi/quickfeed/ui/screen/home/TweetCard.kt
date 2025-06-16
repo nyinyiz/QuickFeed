@@ -53,13 +53,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nyinyi.domain_model.Post
+import com.nyinyi.quickfeed.ui.components.CircleProfileIcon
+import com.nyinyi.quickfeed.ui.components.FormattedTweetText
 import com.nyinyi.quickfeed.ui.components.ShadowImageCard
 import com.nyinyi.quickfeed.ui.components.SimpleCircleProfileIcon
+import com.nyinyi.quickfeed.ui.utils.toReadableTimestamp
 
 @Composable
-fun ModernTweetCard(tweet: Tweet) {
+fun ModernTweetCard(
+    tweet: Post,
+    index: Int,
+) {
     var isLiked by remember { mutableStateOf(false) }
-    var isBookmarked by remember { mutableStateOf(false) }
     var likeCount by remember { mutableStateOf(tweet.likeCount) }
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -77,7 +83,7 @@ fun ModernTweetCard(tweet: Tweet) {
                 animationSpec =
                     tween(
                         durationMillis = 600,
-                        delayMillis = tweet.id.toInt() * 50,
+                        delayMillis = index * 50,
                         easing = FastOutSlowInEasing,
                     ),
             ) +
@@ -125,20 +131,27 @@ fun ModernTweetCard(tweet: Tweet) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    // Enhanced Profile Picture
-                    SimpleCircleProfileIcon(
-                        icon = Icons.Default.Person,
-                        size = 52.dp,
-                        backgroundColor = MaterialTheme.colorScheme.secondary,
-                        iconTint = Color.White,
-                    )
+                    if (tweet.authorProfilePictureUrl != null) {
+                        CircleProfileIcon(
+                            imageUrl = tweet.authorProfilePictureUrl,
+                            placeholderIcon = Icons.Default.Person,
+                            size = 52.dp,
+                        )
+                    } else {
+                        SimpleCircleProfileIcon(
+                            icon = Icons.Default.Person,
+                            size = 52.dp,
+                            backgroundColor = MaterialTheme.colorScheme.secondary,
+                            iconTint = Color.White,
+                        )
+                    }
 
                     Spacer(modifier = Modifier.width(16.dp))
 
                     // User Info
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = tweet.username,
+                            text = tweet.authorUsername,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -149,7 +162,7 @@ fun ModernTweetCard(tweet: Tweet) {
                             modifier = Modifier.padding(top = 2.dp),
                         ) {
                             Text(
-                                text = "@${tweet.handle}",
+                                text = "@${tweet.authorHandle}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -170,8 +183,11 @@ fun ModernTweetCard(tweet: Tweet) {
 
                             Spacer(modifier = Modifier.width(8.dp))
 
+                            val readableTime =
+                                toReadableTimestamp(tweet.timestamp)
+
                             Text(
-                                text = tweet.timestamp,
+                                text = readableTime,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -236,20 +252,20 @@ fun ModernTweetCard(tweet: Tweet) {
                         },
                     )
 
-                    // Retweet
-                    ModernActionButton(
-                        icon = Icons.Outlined.Repeat,
-                        count = tweet.retweetCount,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = { /* Handle retweet */ },
-                    )
-
                     // Reply
                     ModernActionButton(
                         icon = Icons.Outlined.ChatBubbleOutline,
                         count = tweet.commentCount,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = { /* Handle reply */ },
+                    )
+
+                    // Retweet
+                    ModernActionButton(
+                        icon = Icons.Outlined.Repeat,
+                        count = 0,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        onClick = { /* Handle retweet */ },
                     )
 
                     // Share
@@ -300,15 +316,13 @@ private fun ModernActionButton(
         )
 
         count?.let {
-            if (it > 0) {
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = formatCount(it),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = color,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = formatCount(it),
+                style = MaterialTheme.typography.bodyMedium,
+                color = color,
+                fontWeight = FontWeight.Medium,
+            )
         }
     }
 }

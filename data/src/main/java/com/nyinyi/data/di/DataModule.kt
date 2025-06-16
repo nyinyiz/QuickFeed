@@ -5,6 +5,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.nyinyi.data.BuildConfig
 import com.nyinyi.data.repository.AuthRepository
 import com.nyinyi.data.repository.AuthRepositoryImpl
+import com.nyinyi.data.repository.PostRepository
+import com.nyinyi.data.repository.PostRepositoryImpl
 import com.nyinyi.data.repository.UserRepository
 import com.nyinyi.data.repository.UserRepositoryImpl
 import dagger.Module
@@ -52,4 +54,8 @@ object DataModule {
     @Provides
     @Singleton
     fun provideUserRepository(impl: UserRepositoryImpl): UserRepository = impl
+
+    @Provides
+    @Singleton
+    fun providePostRepository(impl: PostRepositoryImpl): PostRepository = impl
 }

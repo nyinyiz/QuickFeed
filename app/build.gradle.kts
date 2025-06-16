@@ -66,6 +66,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
+
     implementation(libs.material.icons.extended)
 
     implementation(libs.firebase.bom)
