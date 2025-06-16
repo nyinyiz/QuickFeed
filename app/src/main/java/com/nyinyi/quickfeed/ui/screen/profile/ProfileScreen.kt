@@ -177,8 +177,12 @@ fun ProfileScreenContent(
                     }
                 },
                 colors =
-                    TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.Transparent,
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor =
+                            MaterialTheme.colorScheme.primaryContainer.copy(
+                                alpha = 0.4f,
+                            ),
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
             )
         },

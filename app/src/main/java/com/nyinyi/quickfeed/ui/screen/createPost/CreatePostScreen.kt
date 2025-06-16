@@ -294,10 +294,12 @@ fun CreatePostContent(
                 },
                 colors =
                     TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                        containerColor =
+                            MaterialTheme.colorScheme.primaryContainer.copy(
+                                alpha = 0.4f,
+                            ),
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
-                modifier = Modifier.shadow(elevation = 1.dp),
             )
         },
         bottomBar = {
