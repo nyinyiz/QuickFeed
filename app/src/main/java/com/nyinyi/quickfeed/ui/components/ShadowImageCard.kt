@@ -101,7 +101,6 @@ fun ShadowImageCard(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize(),
         ) {
-            // Image Content
             if (imageUrl != null) {
                 AsyncImage(
                     model = imageUrl,
@@ -113,17 +112,14 @@ fun ShadowImageCard(
                     contentScale = contentScale,
                 )
             } else {
-                // No image URL provided
                 errorContent?.invoke() ?: DefaultErrorContent()
             }
 
-            // Overlay Content
             overlayContent?.invoke(this)
         }
     }
 }
 
-// Default components
 @Composable
 private fun DefaultErrorContent() {
     Box(
@@ -172,7 +168,6 @@ private fun DefaultLoadingContent() {
     )
 }
 
-// Extension function for shimmer effect
 @Composable
 fun Modifier.shimmerEffect(): Modifier {
     val shimmerColors =
@@ -205,7 +200,6 @@ fun Modifier.shimmerEffect(): Modifier {
     )
 }
 
-// Usage Examples
 @Preview
 @Composable
 fun ShadowImageCardPreview() {
@@ -213,13 +207,10 @@ fun ShadowImageCardPreview() {
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // Basic usage
         ShadowImageCard(
             imageUrl = "https://example.com/image.jpg",
             modifier = Modifier.fillMaxWidth(),
         )
-
-        // Square aspect ratio
         ShadowImageCard(
             imageUrl = "https://example.com/profile.jpg",
             modifier = Modifier.size(120.dp),
@@ -228,7 +219,6 @@ fun ShadowImageCardPreview() {
             elevation = 4.dp,
         )
 
-        // With custom overlay
         ShadowImageCard(
             imageUrl = "https://example.com/banner.jpg",
             modifier =

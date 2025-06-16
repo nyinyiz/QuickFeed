@@ -126,7 +126,6 @@ fun ModernTweetCard(
             Column(
                 modifier = Modifier.padding(20.dp),
             ) {
-                // Header Section
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
@@ -148,7 +147,6 @@ fun ModernTweetCard(
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // User Info
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = tweet.authorUsername,
@@ -194,7 +192,6 @@ fun ModernTweetCard(
                         }
                     }
 
-                    // Menu Button
                     Surface(
                         onClick = { /* Show menu */ },
                         shape = CircleShape,
@@ -210,7 +207,6 @@ fun ModernTweetCard(
                     }
                 }
 
-                // Content Section
                 Spacer(modifier = Modifier.height(16.dp))
 
                 FormattedTweetText(
@@ -218,7 +214,6 @@ fun ModernTweetCard(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                // Media Section
                 tweet.imageUrl?.let { imageUrl ->
                     Spacer(modifier = Modifier.height(16.dp))
                     ShadowImageCard(
@@ -228,14 +223,12 @@ fun ModernTweetCard(
                     )
                 }
 
-                // Actions Section
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    // Like
                     val likeColor by animateColorAsState(
                         targetValue = if (isLiked) Color(0xFFE91E63) else MaterialTheme.colorScheme.onSurfaceVariant,
                         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -252,7 +245,6 @@ fun ModernTweetCard(
                         },
                     )
 
-                    // Reply
                     ModernActionButton(
                         icon = Icons.Outlined.ChatBubbleOutline,
                         count = tweet.commentCount,
@@ -260,7 +252,6 @@ fun ModernTweetCard(
                         onClick = { /* Handle reply */ },
                     )
 
-                    // Retweet
                     ModernActionButton(
                         icon = Icons.Outlined.Repeat,
                         count = 0,
@@ -268,7 +259,6 @@ fun ModernTweetCard(
                         onClick = { /* Handle retweet */ },
                     )
 
-                    // Share
                     ModernActionButton(
                         icon = Icons.Outlined.Share,
                         count = null,

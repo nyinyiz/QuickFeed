@@ -23,7 +23,6 @@ fun FormattedTweetText(
         buildAnnotatedString {
             append(content)
 
-            // Regex patterns for different text types
             val urlPattern = Regex("https?://\\S+")
             val hashtagPattern = Regex("#\\w+")
             val mentionPattern = Regex("@\\w+")
@@ -47,7 +46,6 @@ fun FormattedTweetText(
                 )
             }
 
-            // Style and tag hashtags
             hashtagPattern.findAll(content).forEach { match ->
                 addStyle(
                     style =
@@ -66,7 +64,6 @@ fun FormattedTweetText(
                 )
             }
 
-            // Style and tag mentions
             mentionPattern.findAll(content).forEach { match ->
                 addStyle(
                     style =

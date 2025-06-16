@@ -13,7 +13,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.ui.components.DialogState
 import com.nyinyi.quickfeed.ui.components.StatusDialog
-import kotlin.random.Random
 
 @Composable
 fun HomeScreen(
@@ -87,10 +86,7 @@ fun HomeScreen(
     TwitterTimelineScreen(
         uiState = uiState,
         onClickCreatePost = {
-            viewModel.createPost(
-                postContent = "Sample Post Content ${Random.nextInt(100)}",
-                postImage = null,
-            )
+            onClickCreatePost()
         },
         onClickSettings = onClickSetting,
         onClickProfile = onClickProfile,

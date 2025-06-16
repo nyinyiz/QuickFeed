@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
+import com.nyinyi.quickfeed.ui.screen.createPost.CreatePostScreen
 import com.nyinyi.quickfeed.ui.screen.home.HomeScreen
 import com.nyinyi.quickfeed.ui.screen.login.LoginScreen
 import com.nyinyi.quickfeed.ui.screen.profile.ProfileScreen
@@ -93,7 +94,6 @@ fun SetUpNavGraph(
                     )
                 },
                 onForgotPassword = {
-                    // Handle forgot password logic here
                 },
             )
         }
@@ -151,6 +151,11 @@ fun SetUpNavGraph(
                         route = Routes.ProfileScreen,
                     )
                 },
+                onClickCreatePost = {
+                    navController.navigate(
+                        route = Routes.CreatePostScreen,
+                    )
+                },
             )
         }
 
@@ -179,6 +184,14 @@ fun SetUpNavGraph(
         composable<Routes.ProfileScreen> {
             ProfileScreen(
                 onNavigateBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+
+        composable<Routes.CreatePostScreen> {
+            CreatePostScreen(
+                onBackPress = {
                     navController.popBackStack()
                 },
             )

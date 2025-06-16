@@ -69,7 +69,7 @@ fun TwitterTimelineScreen(
             object {
                 var isVisible by mutableStateOf(true)
                 var lastScrollPosition = 0
-                var scrollThreshold = 50 // pixels
+                var scrollThreshold = 50
 
                 fun updateVisibility(currentPosition: Int) {
                     val scrollDelta = currentPosition - lastScrollPosition
@@ -216,7 +216,6 @@ fun TwitterTimelineScreen(
                             Modifier
                                 .fillMaxSize()
                                 .padding(padding),
-                        // Apply padding here too
                         contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator()
@@ -227,7 +226,6 @@ fun TwitterTimelineScreen(
                             Modifier
                                 .fillMaxSize()
                                 .padding(padding),
-                        // Apply padding here too
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
