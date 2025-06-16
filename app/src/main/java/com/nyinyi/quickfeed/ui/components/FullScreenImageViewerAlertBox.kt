@@ -42,13 +42,6 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 
-/**
- * A full-screen image viewer that appears as a dialog.
- *
- * @param imageUrl The URL of the image to display. Can be null if no image is initially set.
- * @param onDismissRequest Lambda to be invoked when the dialog is dismissed (e.g., back press, tap outside).
- * @param isVisible Controls the visibility of the dialog.
- */
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun FullScreenImageViewerAlertBox(
@@ -63,14 +56,13 @@ fun FullScreenImageViewerAlertBox(
             onDismissRequest = onDismissRequest,
             properties =
                 DialogProperties(
-                    usePlatformDefaultWidth = false, // Allow dialog to expand beyond default width
+                    usePlatformDefaultWidth = false,
                     dismissOnClickOutside = true,
                     dismissOnBackPress = true,
                 ),
         ) {
-            // AnimatedVisibility for smooth appearance/disappearance
             AnimatedVisibility(
-                visible = true, // Control via the Dialog's presence, or could be another state
+                visible = true,
                 enter =
                     fadeIn(animationSpec = tween(300)) +
                         scaleIn(
@@ -90,11 +82,11 @@ fun FullScreenImageViewerAlertBox(
                             .fillMaxSize()
                             .clickable(
                                 interactionSource = interactionSource,
-                                indication = null, // No ripple effect on the background
+                                indication = null,
                             ) {
-                                onDismissRequest() // Dismiss on tap outside the image/close button
+                                onDismissRequest()
                             },
-                    color = Color.Black.copy(alpha = 0.85f), // Semi-transparent background
+                    color = Color.Black.copy(alpha = 0.85f),
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         SubcomposeAsyncImage(
@@ -109,8 +101,7 @@ fun FullScreenImageViewerAlertBox(
                                 Modifier
                                     .fillMaxSize()
                                     .padding(16.dp),
-                            // Padding around the image
-                            contentScale = ContentScale.Fit, // Fit image within bounds, maintaining aspect ratio
+                            contentScale = ContentScale.Fit,
                         ) {
                             val state = painter.state
                             when (state) {
@@ -145,7 +136,6 @@ fun FullScreenImageViewerAlertBox(
                             }
                         }
 
-                        // Close Button
                         IconButton(
                             onClick = onDismissRequest,
                             modifier =
@@ -176,9 +166,6 @@ fun FullScreenImageViewerAlertBoxPreviewVisible() {
     MaterialTheme {
         var isVisible by remember { mutableStateOf(true) }
         FullScreenImageViewerAlertBox(
-            // Replace with a valid image URL for preview if you have one,
-            // or use a placeholder if your Coil setup handles it.
-            // For a direct preview, you might need to ensure network access or use a local resource.
             imageUrl = "https://picsum.photos/seed/compose-viewer/1200/800",
             onDismissRequest = { isVisible = false },
             isVisible = isVisible,
@@ -202,19 +189,18 @@ fun FullScreenImageViewerAlertBoxPreviewNotVisible() {
 @Composable
 fun FullScreenImageViewerAlertBoxPreviewLoading() {
     MaterialTheme {
-        // Simulate loading state for preview (Coil might be too fast locally)
         val context = LocalContext.current
         val loadingModel =
             remember {
                 ImageRequest
                     .Builder(context)
-                    .data("https://thisshouldtakeawhile.com/image.jpg") // A non-existent or slow URL
+                    .data("https://thisshouldtakeawhile.com/image.jpg")
                     .build()
             }
         var isVisible by remember { mutableStateOf(true) }
 
         FullScreenImageViewerAlertBox(
-            imageUrl = loadingModel.data.toString(), // Pass the URL string
+            imageUrl = loadingModel.data.toString(),
             onDismissRequest = { isVisible = false },
             isVisible = isVisible,
         )
