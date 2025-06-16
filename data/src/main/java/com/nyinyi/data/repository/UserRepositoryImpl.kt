@@ -1,13 +1,15 @@
 package com.nyinyi.data.repository
 
-import android.net.Uri
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import com.nyinyi.domain_model.UserProfile
+import io.github.jan.supabase.storage.Storage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.io.InputStream
 import javax.inject.Inject
 
 class UserRepositoryImpl
@@ -15,12 +17,13 @@ class UserRepositoryImpl
     constructor(
         private val auth: FirebaseAuth,
         private val firestore: FirebaseFirestore,
-        private val storage: FirebaseStorage,
+        private val supabaseStorage: Storage,
     ) : UserRepository {
         private val usersCollection = firestore.collection("users")
+        private val profilePicturesBucket = "profile-pictures"
 
         override fun getCurrentUserId(): String? {
-            Log.d("", "Current User Id : ${auth.currentUser?.uid}")
+            Log.d("UserRepositoryImpl", "Current User Id : ${auth.currentUser?.uid}")
             return auth.currentUser?.uid
         }
 
@@ -47,15 +50,15 @@ class UserRepositoryImpl
             val userId =
                 getCurrentUserId() ?: return Result.failure(
                     FirebaseAuthException(
-                        "",
+                        "NO_USER",
                         "No user logged in.",
                     ),
                 )
             val userEmail =
                 auth.currentUser?.email ?: return Result.failure(
                     FirebaseAuthException(
-                        "",
-                        " User has no email.",
+                        "NO_EMAIL",
+                        "User has no email.",
                     ),
                 )
 
@@ -82,7 +85,7 @@ class UserRepositoryImpl
             val userId =
                 getCurrentUserId() ?: return Result.failure(
                     FirebaseAuthException(
-                        "",
+                        "NO_USER",
                         "No user logged in.",
                     ),
                 )
@@ -111,12 +114,12 @@ class UserRepositoryImpl
         override suspend fun updateUserProfile(
             newUsername: String,
             newHandle: String,
-            newProfilePictureUri: Uri?,
+            newProfilePictureInputStream: InputStream?,
         ): Result<Unit> {
             val userId =
                 getCurrentUserId() ?: return Result.failure(
                     FirebaseAuthException(
-                        "",
+                        "NO_USER",
                         "No user logged in.",
                     ),
                 )
@@ -124,23 +127,58 @@ class UserRepositoryImpl
             return try {
                 val updates = mutableMapOf<String, Any>()
 
-                if (newProfilePictureUri != null) {
-                    val storageRef = storage.reference.child("profile_pictures/$userId")
-
-                    storageRef.putFile(newProfilePictureUri).await()
-
-                    val downloadUrl = storageRef.downloadUrl.await().toString()
-                    updates["profilePictureUrl"] = downloadUrl
+                if (newProfilePictureInputStream != null) {
+                    val profilePictureUrl =
+                        uploadProfilePictureToSupabase(
+                            userId = userId,
+                            inputStream = newProfilePictureInputStream,
+                        )
+                    updates["profilePictureUrl"] = profilePictureUrl
                 }
 
                 updates["username"] = newUsername
-                updates["handle"] = newHandle
+                updates["handle"] = newHandle.lowercase()
 
                 usersCollection.document(userId).update(updates).await()
-
                 Result.success(Unit)
             } catch (e: Exception) {
+                Log.e("UserRepositoryImpl", "Error updating user profile", e)
                 Result.failure(e)
             }
         }
+
+        private suspend fun uploadProfilePictureToSupabase(
+            userId: String,
+            inputStream: InputStream,
+        ): String =
+            withContext(Dispatchers.IO) {
+                try {
+                    val fileBytes = inputStream.readBytes()
+
+                    val fileExtension = "jpg"
+
+                    val timestamp = System.currentTimeMillis()
+                    val filePath = "user_profiles/$userId/profile_$timestamp.$fileExtension"
+
+                    Log.d("UserRepositoryImpl", "Uploading file to path: $filePath")
+                    Log.d("UserRepositoryImpl", "File size: ${fileBytes.size} bytes")
+
+                    val bucket = supabaseStorage.from(profilePicturesBucket)
+
+                    bucket.upload(
+                        path = filePath,
+                        data = fileBytes,
+                    )
+
+                    Log.d("UserRepositoryImpl", "Successfully uploaded to Supabase Storage")
+
+                    val publicUrl = bucket.publicUrl(filePath)
+                    Log.d("UserRepositoryImpl", "Public URL: $publicUrl")
+
+                    publicUrl
+                } catch (e: Exception) {
+                    Log.e("UserRepositoryImpl", "Error uploading to Supabase Storage", e)
+                    throw e
+                }
+            }
     }

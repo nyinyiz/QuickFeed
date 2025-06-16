@@ -72,6 +72,7 @@ fun CircleProfileIcon(
 // Alternative simple version without image loading
 @Composable
 fun SimpleCircleProfileIcon(
+    profilePictureUrl: String? = null,
     icon: ImageVector = Icons.Default.Person,
     size: Dp = 48.dp,
     shadowElevation: Dp = 4.dp,

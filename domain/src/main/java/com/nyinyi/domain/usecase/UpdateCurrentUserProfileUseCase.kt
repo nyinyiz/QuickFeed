@@ -1,7 +1,7 @@
 package com.nyinyi.domain.usecase
 
-import android.net.Uri
 import com.nyinyi.data.repository.UserRepository
+import java.io.InputStream
 import javax.inject.Inject
 
 class UpdateCurrentUserProfileUseCase
@@ -12,7 +12,7 @@ class UpdateCurrentUserProfileUseCase
         suspend operator fun invoke(
             newUsername: String,
             newHandle: String,
-            newProfilePictureUri: Uri?,
+            newProfilePictureUri: InputStream?,
         ) = repository.updateUserProfile(
             newUsername = newUsername,
             newHandle = newHandle,
