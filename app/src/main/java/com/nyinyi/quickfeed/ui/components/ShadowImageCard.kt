@@ -37,10 +37,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 
 @Composable
 fun ShadowImageCard(
@@ -103,7 +106,14 @@ fun ShadowImageCard(
         ) {
             if (imageUrl != null) {
                 AsyncImage(
-                    model = imageUrl,
+                    model =
+                        ImageRequest
+                            .Builder(LocalContext.current)
+                            .data(imageUrl)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .networkCachePolicy(CachePolicy.ENABLED)
+                            .build(),
                     contentDescription = contentDescription,
                     modifier =
                         Modifier
@@ -252,7 +262,6 @@ fun ShadowImageCardPreview() {
             },
         )
 
-        // Circular profile image
         ShadowImageCard(
             imageUrl = "https://example.com/avatar.jpg",
             modifier = Modifier.size(80.dp),
@@ -262,7 +271,6 @@ fun ShadowImageCardPreview() {
             onClick = { /* Handle click */ },
         )
 
-        // Custom error content
         ShadowImageCard(
             imageUrl = null,
             modifier =

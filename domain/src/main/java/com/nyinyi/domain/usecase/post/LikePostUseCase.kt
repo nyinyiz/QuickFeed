@@ -1,12 +1,12 @@
-package com.nyinyi.domain.usecase
+package com.nyinyi.domain.usecase.post
 
 import com.nyinyi.data.repository.PostRepository
 import javax.inject.Inject
 
-class GetTimeLinePostUseCase
+class LikePostUseCase
     @Inject
     constructor(
         private val repository: PostRepository,
     ) {
-        suspend operator fun invoke() = repository.getTimelinePosts()
+        suspend operator fun invoke(postId: String) = repository.likePost(postId)
     }

@@ -1,14 +1,9 @@
 package com.nyinyi.quickfeed.ui.screen.home
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,208 +59,181 @@ import com.nyinyi.quickfeed.ui.utils.toReadableTimestamp
 fun ModernTweetCard(
     tweet: Post,
     index: Int,
+    onClickLike: (Boolean) -> Unit = {},
 ) {
-    var isLiked by remember { mutableStateOf(false) }
+    var isLiked by remember { mutableStateOf(tweet.isLiked) }
     var likeCount by remember { mutableStateOf(tweet.likeCount) }
     val interactionSource = remember { MutableInteractionSource() }
 
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.98f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "Card Scale",
-    )
-
-    AnimatedVisibility(
-        visible = true,
-        enter =
-            fadeIn(
-                animationSpec =
-                    tween(
-                        durationMillis = 600,
-                        delayMillis = index * 50,
-                        easing = FastOutSlowInEasing,
-                    ),
-            ) +
-                slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec =
-                        spring(
-                            dampingRatio = Spring.DampingRatioLowBouncy,
-                            stiffness = Spring.StiffnessMedium,
-                        ),
+    Card(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = { /* Navigate to tweet detail */ },
                 ),
+        shape = RoundedCornerShape(24.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = Color.Transparent,
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 8.dp,
+            ),
+        border =
+            BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+            ),
     ) {
-        Card(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .scale(scale)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = { /* Navigate to tweet detail */ },
-                    ),
-            shape = RoundedCornerShape(24.dp),
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = Color.Transparent,
-                ),
-            elevation =
-                CardDefaults.cardElevation(
-                    defaultElevation = 0.dp,
-                    pressedElevation = 8.dp,
-                ),
-            border =
-                BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                ),
+        Column(
+            modifier = Modifier.padding(20.dp),
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    if (tweet.authorProfilePictureUrl != null) {
-                        CircleProfileIcon(
-                            imageUrl = tweet.authorProfilePictureUrl,
-                            placeholderIcon = Icons.Default.Person,
-                            size = 52.dp,
-                        )
-                    } else {
-                        SimpleCircleProfileIcon(
-                            icon = Icons.Default.Person,
-                            size = 52.dp,
-                            backgroundColor = MaterialTheme.colorScheme.secondary,
-                            iconTint = Color.White,
-                        )
-                    }
+                if (tweet.authorProfilePictureUrl != null) {
+                    CircleProfileIcon(
+                        imageUrl = tweet.authorProfilePictureUrl,
+                        placeholderIcon = Icons.Default.Person,
+                        size = 52.dp,
+                    )
+                } else {
+                    SimpleCircleProfileIcon(
+                        icon = Icons.Default.Person,
+                        size = 52.dp,
+                        backgroundColor = MaterialTheme.colorScheme.secondary,
+                        iconTint = Color.White,
+                    )
+                }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = tweet.authorUsername,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = tweet.authorUsername,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(top = 2.dp),
-                        ) {
-                            Text(
-                                text = "@${tweet.authorHandle}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(4.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                                alpha = 0.4f,
-                                            ),
-                                        ),
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            val readableTime =
-                                toReadableTimestamp(tweet.timestamp)
-
-                            Text(
-                                text = readableTime,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-
-                    Surface(
-                        onClick = { /* Show menu */ },
-                        shape = CircleShape,
-                        color = Color.Transparent,
-                        modifier = Modifier.size(40.dp),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 2.dp),
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More options",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(8.dp),
+                        Text(
+                            text = "@${tweet.authorHandle}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Box(
+                            modifier =
+                                Modifier
+                                    .size(4.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                            alpha = 0.4f,
+                                        ),
+                                    ),
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        val readableTime =
+                            toReadableTimestamp(tweet.timestamp)
+
+                        Text(
+                            text = readableTime,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    onClick = { /* Show menu */ },
+                    shape = CircleShape,
+                    color = Color.Transparent,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "More options",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(8.dp),
+                    )
+                }
+            }
 
-                FormattedTweetText(
-                    content = tweet.content,
+            Spacer(modifier = Modifier.height(16.dp))
+
+            FormattedTweetText(
+                content = tweet.content,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            tweet.imageUrl?.let { imageUrl ->
+                Spacer(modifier = Modifier.height(16.dp))
+                ShadowImageCard(
+                    imageUrl = imageUrl,
                     modifier = Modifier.fillMaxWidth(),
+                    elevation = 24.dp,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                val likeColor by animateColorAsState(
+                    targetValue = if (isLiked) Color(0xFFE91E63) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                    label = "Like Color",
                 )
 
-                tweet.imageUrl?.let { imageUrl ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    ShadowImageCard(
-                        imageUrl = imageUrl,
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = 24.dp,
-                    )
-                }
+                ModernActionButton(
+                    icon = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    count = likeCount,
+                    color = likeColor,
+                    onClick = {
+                        isLiked = !isLiked
+                        likeCount += if (isLiked) 1 else -1
+                        onClickLike(isLiked)
+                    },
+                )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                ModernActionButton(
+                    icon = Icons.Outlined.ChatBubbleOutline,
+                    count = tweet.commentCount,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    onClick = { /* Handle reply */ },
+                )
 
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    val likeColor by animateColorAsState(
-                        targetValue = if (isLiked) Color(0xFFE91E63) else MaterialTheme.colorScheme.onSurfaceVariant,
-                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                        label = "Like Color",
-                    )
+                ModernActionButton(
+                    icon = Icons.Outlined.Repeat,
+                    count = 0,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    onClick = { /* Handle retweet */ },
+                )
 
-                    ModernActionButton(
-                        icon = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                        count = likeCount,
-                        color = likeColor,
-                        onClick = {
-                            isLiked = !isLiked
-                            likeCount += if (isLiked) 1 else -1
-                        },
-                    )
-
-                    ModernActionButton(
-                        icon = Icons.Outlined.ChatBubbleOutline,
-                        count = tweet.commentCount,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = { /* Handle reply */ },
-                    )
-
-                    ModernActionButton(
-                        icon = Icons.Outlined.Repeat,
-                        count = 0,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = { /* Handle retweet */ },
-                    )
-
-                    ModernActionButton(
-                        icon = Icons.Outlined.Share,
-                        count = null,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = { /* Handle share */ },
-                    )
-                }
+                ModernActionButton(
+                    icon = Icons.Outlined.Share,
+                    count = null,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    onClick = { /* Handle share */ },
+                )
             }
         }
     }

@@ -4,7 +4,7 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nyinyi.common.utils.ConnectionObserver
-import com.nyinyi.domain.usecase.UserSignInUseCase
+import com.nyinyi.domain.usecase.auth.UserSignInUseCase
 import com.nyinyi.quickfeed.provider.DispatcherProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -61,6 +61,8 @@ fun TwitterTimelineScreen(
     onClickSettings: () -> Unit = {},
     onClickProfile: () -> Unit = {},
     onRefreshTimeline: () -> Unit = {},
+    onClickLike: (String) -> Unit = {},
+    onClickUnLike: (String) -> Unit = {},
 ) {
     val lazyListState = rememberLazyListState()
 
@@ -254,6 +256,13 @@ fun TwitterTimelineScreen(
                             ModernTweetCard(
                                 tweet = post,
                                 index = index,
+                                onClickLike = { isLiked ->
+                                    if (isLiked) {
+                                        onClickLike(post.id)
+                                    } else {
+                                        onClickUnLike(post.id)
+                                    }
+                                },
                             )
                         }
                     }

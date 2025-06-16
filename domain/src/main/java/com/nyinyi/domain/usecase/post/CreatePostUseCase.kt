@@ -1,4 +1,4 @@
-package com.nyinyi.domain.usecase
+package com.nyinyi.domain.usecase.post
 
 import com.nyinyi.data.repository.PostRepository
 import java.io.InputStream

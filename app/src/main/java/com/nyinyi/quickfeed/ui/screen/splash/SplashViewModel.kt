@@ -3,7 +3,7 @@ package com.nyinyi.quickfeed.ui.screen.splash
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nyinyi.common.utils.ConnectionObserver
-import com.nyinyi.domain.usecase.IsLoggedInUseCase
+import com.nyinyi.domain.usecase.auth.IsLoggedInUseCase
 import com.nyinyi.quickfeed.provider.DispatcherProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

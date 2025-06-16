@@ -170,6 +170,8 @@ class PostRepositoryImpl
 
                         val userRef = usersCollection.document(currentUserId)
                         batch.update(userRef, "likedPosts", FieldValue.arrayUnion(postId))
+
+                        Log.d("unlikePost", "Post liked successfully")
                     }
                 }
                 Result.success(Unit)
@@ -188,6 +190,8 @@ class PostRepositoryImpl
 
                         val userRef = usersCollection.document(currentUserId)
                         batch.update(userRef, "likedPosts", FieldValue.arrayRemove(postId))
+
+                        Log.d("unlikePost", "Post unliked successfully")
                     }
                 }
                 Result.success(Unit)

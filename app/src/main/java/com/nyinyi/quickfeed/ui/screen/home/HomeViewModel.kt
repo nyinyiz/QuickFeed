@@ -3,12 +3,14 @@ package com.nyinyi.quickfeed.ui.screen.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nyinyi.common.utils.ConnectionObserver
-import com.nyinyi.domain.usecase.CreatePostUseCase
-import com.nyinyi.domain.usecase.GetCurrentUserIdUseCase
-import com.nyinyi.domain.usecase.GetCurrentUserProfileUseCase
-import com.nyinyi.domain.usecase.GetTimeLinePostUseCase
-import com.nyinyi.domain.usecase.IsProfileCompletedUseCase
-import com.nyinyi.domain.usecase.LogOutUseCase
+import com.nyinyi.domain.usecase.auth.LogOutUseCase
+import com.nyinyi.domain.usecase.post.CreatePostUseCase
+import com.nyinyi.domain.usecase.post.GetTimeLinePostUseCase
+import com.nyinyi.domain.usecase.post.LikePostUseCase
+import com.nyinyi.domain.usecase.post.UnLikeUseCase
+import com.nyinyi.domain.usecase.user.GetCurrentUserIdUseCase
+import com.nyinyi.domain.usecase.user.GetCurrentUserProfileUseCase
+import com.nyinyi.domain.usecase.user.IsProfileCompletedUseCase
 import com.nyinyi.domain_model.Post
 import com.nyinyi.domain_model.UserProfile
 import com.nyinyi.quickfeed.provider.DispatcherProvider
@@ -35,6 +37,8 @@ class HomeViewModel
         private val isProfileCompleted: IsProfileCompletedUseCase,
         private val createPostUseCase: CreatePostUseCase,
         private val getTimeLinePostUseCase: GetTimeLinePostUseCase,
+        private val likePostUseCase: LikePostUseCase,
+        private val unlikePostUseCase: UnLikeUseCase,
         private val connectionObserver: ConnectionObserver,
         private val dispatcherProvider: DispatcherProvider,
     ) : ViewModel() {
@@ -149,6 +153,28 @@ class HomeViewModel
                     _uiState.update { it.copy(isCreatePost = false) }
                     _event.emit(HomeEvent.Error("Failed to create post: ${exception.message}"))
                 }
+            }
+        }
+
+        fun likePost(postId: String) {
+            viewModelScope.launch(dispatcherProvider.io()) {
+                likePostUseCase(postId)
+                    .onSuccess {
+                        loadTimelinePosts()
+                    }.onFailure { exception ->
+                        _event.emit(HomeEvent.Error("Failed to like post: ${exception.message}"))
+                    }
+            }
+        }
+
+        fun unLikePost(postId: String) {
+            viewModelScope.launch(dispatcherProvider.io()) {
+                unlikePostUseCase(postId)
+                    .onSuccess {
+                        loadTimelinePosts()
+                    }.onFailure { exception ->
+                        _event.emit(HomeEvent.Error("Failed to like post: ${exception.message}"))
+                    }
             }
         }
     }

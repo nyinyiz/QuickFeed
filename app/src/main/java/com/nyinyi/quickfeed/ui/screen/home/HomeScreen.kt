@@ -93,5 +93,11 @@ fun HomeScreen(
         onRefreshTimeline = {
             viewModel.loadTimelinePosts()
         },
+        onClickLike = { postId ->
+            viewModel.likePost(postId)
+        },
+        onClickUnLike = { postId ->
+            viewModel.unLikePost(postId)
+        },
     )
 }

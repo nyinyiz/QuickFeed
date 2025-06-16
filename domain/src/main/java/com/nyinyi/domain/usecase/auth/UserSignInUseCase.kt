@@ -1,4 +1,4 @@
-package com.nyinyi.domain.usecase
+package com.nyinyi.domain.usecase.auth
 
 import com.nyinyi.data.repository.AuthRepository
 import javax.inject.Inject
