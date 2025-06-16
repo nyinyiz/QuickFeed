@@ -161,7 +161,7 @@ fun SetUpNavGraph(
 
         composable<Routes.SettingsScreen> {
             SettingScreen(
-                onThemeChange = { themeSetting ->
+                onThemeChange = {
                     onToggleTheme()
                 },
                 logOutSuccess = {
