@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -46,6 +47,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,9 +63,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nyinyi.quickfeed.ui.components.DialogState
+import com.nyinyi.quickfeed.ui.components.StatusDialog
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
 
-// Enum for theme options
 enum class ThemeSetting {
     SYSTEM,
     LIGHT,
@@ -73,12 +78,74 @@ enum class ThemeSetting {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
+    viewModel: SettingViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     onThemeChange: (ThemeSetting) -> Unit = {},
     logOutSuccess: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var dialogState by remember { mutableStateOf(DialogState()) }
+    var showLogoutConfirmDialog by remember { mutableStateOf(false) }
+
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var showThemeDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is SettingUiEvent.LogOutSuccess -> {
+                    logOutSuccess()
+                }
+
+                is SettingUiEvent.Error -> {
+                    dialogState =
+                        DialogState(
+                            title = "Error",
+                            messageString = event.message,
+                            show = true,
+                            isError = true,
+                        )
+                }
+            }
+        }
+    }
+
+    if (dialogState.show) {
+        StatusDialog(
+            dialogState = dialogState,
+            onDismiss = {
+                dialogState = dialogState.copy(show = false)
+                if (dialogState.isError) {
+                    viewModel.clearError()
+                } else {
+                    viewModel.logOut()
+                }
+            },
+        )
+    }
+
+    if (showLogoutConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirmDialog = false },
+            title = { Text("Confirm Logout") },
+            text = { Text("Are you sure you want to logout?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutConfirmDialog = false
+                        viewModel.logOut()
+                    },
+                ) {
+                    Text("Confirm", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirmDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -86,7 +153,10 @@ fun SettingScreen(
             CenterAlignedTopAppBar(
                 colors =
                     TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        containerColor =
+                            MaterialTheme.colorScheme.primaryContainer.copy(
+                                alpha = 0.4f,
+                            ),
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                 title = {
@@ -102,7 +172,11 @@ fun SettingScreen(
                         modifier =
                             Modifier
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(
+                                        alpha = 0.5f,
+                                    ),
+                                ),
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
@@ -120,9 +194,8 @@ fun SettingScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(vertical = 8.dp), // Padding for the content list
+                    .padding(vertical = 8.dp),
         ) {
-            // --- Appearance Section ---
             item {
                 SettingsSectionTitle("Appearance")
                 SettingItem(
@@ -137,7 +210,6 @@ fun SettingScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // --- Account Section (Example) ---
             item {
                 SettingsSectionTitle("Account")
                 SettingItem(
@@ -149,21 +221,22 @@ fun SettingScreen(
                 SettingItem(
                     icon = Icons.AutoMirrored.Filled.Logout,
                     title = "Logout",
-                    onClick = { logOutSuccess() },
-                    titleColor = MaterialTheme.colorScheme.error, // Highlight logout
+                    onClick = {
+                        showLogoutConfirmDialog = true
+                    },
+                    titleColor = MaterialTheme.colorScheme.error,
                 )
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // --- About Section (Example) ---
             item {
                 SettingsSectionTitle("About")
                 SettingItem(
                     icon = Icons.Default.Info,
                     title = "App Version",
-                    subtitle = "viewModel.appVersion", // Get from ViewModel/BuildConfig
-                    onClick = {}, // Non-clickable or show more info
+                    subtitle = "viewModel.appVersion",
+                    onClick = {},
                 )
                 SettingItem(
                     icon = Icons.Default.Policy,
@@ -171,7 +244,7 @@ fun SettingScreen(
                     onClick = { /* TODO: Open Privacy Policy URL */ },
                 )
                 SettingItem(
-                    icon = Icons.Default.Terminal, // Or Gavel for Terms
+                    icon = Icons.Default.Terminal,
                     title = "Terms of Service",
                     onClick = { /* TODO: Open Terms of Service URL */ },
                 )
@@ -181,9 +254,9 @@ fun SettingScreen(
 
     if (showThemeDialog) {
         ThemeSelectionDialog(
-            currentTheme = ThemeSetting.LIGHT, // currentThemeSetting,
+            currentTheme = ThemeSetting.LIGHT,
             onThemeSelected = { theme ->
-//                viewModel.setThemeSetting(theme)
+
                 onThemeChange(theme)
                 showThemeDialog = false
             },
@@ -219,10 +292,9 @@ fun SettingItem(
                 .fillMaxWidth()
                 .clickable(onClick = onClick, role = Role.Button)
                 .padding(horizontal = 8.dp),
-        // Reduce horizontal padding for ListItem
         colors =
             ListItemDefaults.colors(
-                containerColor = Color.Transparent, // Make ListItem transparent
+                containerColor = Color.Transparent,
             ),
         headlineContent = {
             Text(
@@ -245,7 +317,7 @@ fun SettingItem(
         leadingContent = {
             Icon(
                 imageVector = icon,
-                contentDescription = null, // Title is descriptive enough
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp),
             )
@@ -271,7 +343,7 @@ fun SettingItemWithSwitch(
             Modifier
                 .fillMaxWidth()
                 .clickable(
-                    onClick = { onCheckedChange(!checked) }, // Toggle on click
+                    onClick = { onCheckedChange(!checked) },
                     role = Role.Switch,
                 ).padding(horizontal = 8.dp),
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -302,7 +374,7 @@ fun SettingItemWithSwitch(
                     if (checked) {
                         {
                             Icon(
-                                imageVector = Icons.Filled.Brightness7, // Example icon for dark theme
+                                imageVector = Icons.Filled.Brightness7,
                                 contentDescription = null,
                                 modifier = Modifier.size(SwitchDefaults.IconSize),
                             )
@@ -310,7 +382,7 @@ fun SettingItemWithSwitch(
                     } else {
                         {
                             Icon(
-                                imageVector = Icons.Filled.Brightness4, // Example icon for light theme
+                                imageVector = Icons.Filled.Brightness4,
                                 contentDescription = null,
                                 modifier = Modifier.size(SwitchDefaults.IconSize),
                             )
@@ -334,12 +406,12 @@ fun ThemeSelectionDialog(
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            shape = RoundedCornerShape(24.dp), // More rounded dialog
+            shape = RoundedCornerShape(24.dp),
             colors =
                 CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, // M3 dialog color
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
-            modifier = Modifier.fillMaxWidth(0.9f), // Control dialog width
+            modifier = Modifier.fillMaxWidth(0.9f),
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Text(
@@ -369,7 +441,7 @@ fun ThemeSelectionDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(Modifier.weight(1f))
-                        // Optional: Icon for each theme
+
                         when (theme) {
                             ThemeSetting.LIGHT ->
                                 Icon(
@@ -412,7 +484,6 @@ fun ThemeSelectionDialog(
 @Composable
 fun SettingScreenPreviewLight() {
     QuickFeedTheme(darkTheme = false) {
-        // Use your app's theme
         Surface {
             SettingScreen(onNavigateBack = {})
         }
@@ -423,7 +494,6 @@ fun SettingScreenPreviewLight() {
 @Composable
 fun SettingScreenPreviewDark() {
     QuickFeedTheme(darkTheme = true) {
-        // Use your app's theme
         Surface {
             SettingScreen(onNavigateBack = {})
         }

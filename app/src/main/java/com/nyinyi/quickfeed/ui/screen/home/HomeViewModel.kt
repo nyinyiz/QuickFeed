@@ -44,10 +44,14 @@ class HomeViewModel
             checkProfileCompletion()
         }
 
-        fun logOut(onSuccess: () -> Unit) {
+        fun clearError() {
+            _uiState.update { it.copy(errorMessage = null) }
+        }
+
+        fun logOut() {
             viewModelScope.launch(dispatcherProvider.main()) {
                 logOutUseCase()
-                onSuccess()
+                _event.emit(HomeEvent.LogOutSuccess)
             }
         }
 
@@ -98,4 +102,6 @@ sealed class HomeEvent {
     data class Error(
         val errorMessage: String,
     ) : HomeEvent()
+
+    object LogOutSuccess : HomeEvent()
 }

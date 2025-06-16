@@ -54,7 +54,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.R
 import com.nyinyi.quickfeed.ui.components.CircleProfileIcon
 import com.nyinyi.quickfeed.ui.components.DefaultAppGradientBackground
+import com.nyinyi.quickfeed.ui.components.DialogState
 import com.nyinyi.quickfeed.ui.components.SimpleCircleProfileIcon
+import com.nyinyi.quickfeed.ui.components.StatusDialog
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
 import kotlinx.coroutines.flow.flow
 import kotlin.random.Random
@@ -481,9 +483,30 @@ fun HomeScreen(
     onClickProfile: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var dialogState by remember { mutableStateOf(DialogState()) }
 
     LaunchedEffect(Unit) {
         viewModel.checkProfileCompletion()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is HomeEvent.Error -> {
+                    dialogState =
+                        DialogState(
+                            title = "Error",
+                            messageString = event.errorMessage,
+                            show = true,
+                            isError = true,
+                        )
+                }
+
+                is HomeEvent.LogOutSuccess -> {
+                    logOutSuccess()
+                }
+            }
+        }
     }
 
     if (uiState.userProfileNotCompleted) {
@@ -501,12 +524,22 @@ fun HomeScreen(
         )
     }
 
+    if (dialogState.show) {
+        StatusDialog(
+            dialogState = dialogState,
+            onDismiss = {
+                dialogState = dialogState.copy(show = false)
+                if (dialogState.isError) {
+                    viewModel.clearError()
+                }
+            },
+        )
+    }
+
     TwitterTimelineScreen(
         uiState = uiState,
         onClickCreatePost = {
-            viewModel.logOut {
-                logOutSuccess()
-            }
+            viewModel.logOut()
         },
         onClickSettings = onClickSetting,
         onClickProfile = onClickProfile,
