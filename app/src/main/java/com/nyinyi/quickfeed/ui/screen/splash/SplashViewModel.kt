@@ -7,6 +7,7 @@ import com.nyinyi.domain.usecase.auth.IsLoggedInUseCase
 import com.nyinyi.quickfeed.provider.DispatcherProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,6 +36,9 @@ class SplashViewModel
         private val connectionObserver: ConnectionObserver,
         private val dispatcherProvider: DispatcherProvider,
     ) : ViewModel() {
+        private val _hasInternetAccess = MutableStateFlow(false)
+        val hasInternetAccess: StateFlow<Boolean> = _hasInternetAccess.asStateFlow()
+
         private val _navigateTo = MutableStateFlow<SplashDestination>(SplashDestination.Undefined)
         val navigateTo = _navigateTo.asStateFlow()
 
@@ -42,16 +46,23 @@ class SplashViewModel
         val state = _state.asStateFlow()
 
         init {
-            with(connectionObserver) {
-                onConnected = {
+            connectionObserver.onConnected = { hasInternet ->
+                _hasInternetAccess.value = hasInternet
+                if (hasInternet) {
                     _state.value = SplashState.Connected
                     checkLoginAndDecideRoute()
-                }
-                onDisconnected = {
+                } else {
                     _state.value = SplashState.Disconnected
                 }
-                startObserving()
             }
+
+            connectionObserver.onDisconnected = {
+                _hasInternetAccess.value = false
+                _state.value = SplashState.Disconnected
+            }
+
+            connectionObserver.startObserving()
+            _hasInternetAccess.value = connectionObserver.isCurrentlyConnected()
         }
 
         fun checkLoginAndDecideRoute() {
