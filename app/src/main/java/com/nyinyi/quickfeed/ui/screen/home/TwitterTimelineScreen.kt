@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.nyinyi.domain_model.Post
 import com.nyinyi.quickfeed.R
 import com.nyinyi.quickfeed.ui.components.CircleProfileIcon
 import com.nyinyi.quickfeed.ui.components.DefaultAppGradientBackground
@@ -64,6 +65,7 @@ fun TwitterTimelineScreen(
     onRefreshTimeline: () -> Unit = {},
     onClickLike: (String) -> Unit = {},
     onClickUnLike: (String) -> Unit = {},
+    onDeleteTweet: (Post) -> Unit = {},
 ) {
     val lazyListState = rememberLazyListState()
     var isImagViewerVisible by remember { mutableStateOf(false) }
@@ -258,6 +260,7 @@ fun TwitterTimelineScreen(
                         ) { index, post ->
                             ModernTweetCard(
                                 tweet = post,
+                                isMyTweet = post.authorUid == uiState.userId,
                                 onClickLike = { isLiked ->
                                     if (isLiked) {
                                         onClickLike(post.id)
@@ -268,6 +271,9 @@ fun TwitterTimelineScreen(
                                 onClickMedia = { imageUrl ->
                                     selectedImageUrl = imageUrl
                                     isImagViewerVisible = true
+                                },
+                                onDeleteTweet = {
+                                    onDeleteTweet(post)
                                 },
                             )
                         }

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -66,6 +65,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.ui.components.DialogState
+import com.nyinyi.quickfeed.ui.components.ReusableConfirmationDialog
 import com.nyinyi.quickfeed.ui.components.StatusDialog
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
 
@@ -125,25 +125,17 @@ fun SettingScreen(
     }
 
     if (showLogoutConfirmDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutConfirmDialog = false },
-            title = { Text("Confirm Logout") },
-            text = { Text("Are you sure you want to logout?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showLogoutConfirmDialog = false
-                        viewModel.logOut()
-                    },
-                ) {
-                    Text("Confirm", color = MaterialTheme.colorScheme.error)
-                }
+        ReusableConfirmationDialog(
+            showDialog = showLogoutConfirmDialog,
+            onDismissRequest = {
+                showLogoutConfirmDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showLogoutConfirmDialog = false }) {
-                    Text("Cancel")
-                }
+            onConfirm = {
+                showLogoutConfirmDialog = false
+                viewModel.logOut()
             },
+            title = "Logout",
+            text = "Are you sure you want to logout?",
         )
     }
 

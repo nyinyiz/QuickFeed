@@ -200,6 +200,37 @@ class PostRepositoryImpl
             }
         }
 
+        override suspend fun deletePost(post: Post): Result<Unit> {
+            val currentUserId =
+                getCurrentUserId() ?: return Result.failure(
+                    FirebaseAuthException(
+                        "NO_USER",
+                        "No user logged in.",
+                    ),
+                )
+
+            if (post.authorUid != currentUserId) {
+                return Result.failure(Exception("You are not authorized to delete this post."))
+            }
+
+            return try {
+                Log.d("deletePost", "Post deleted successfully")
+                if (post.imageUrl.isNullOrEmpty().not()) {
+                    val path = post.imageUrl!!.substringAfter("$timeLinePostBucket/")
+                    if (path.isNotEmpty() && path != post.imageUrl) {
+                        supabaseStorage.from(timeLinePostBucket).delete(listOf(path))
+                    }
+                }
+
+                postsCollection.document(post.id).delete().await()
+
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Log.e("PostRepositoryImpl", "Error deleting post", e)
+                Result.failure(e)
+            }
+        }
+
         private suspend fun uploadPostImageToSupabase(
             postId: String,
             imageInputStream: InputStream,

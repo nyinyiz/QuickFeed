@@ -22,19 +22,28 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Repeat
+import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,12 +67,17 @@ import com.nyinyi.quickfeed.ui.utils.toReadableTimestamp
 @Composable
 fun ModernTweetCard(
     tweet: Post,
+    isMyTweet: Boolean = false,
     onClickLike: (Boolean) -> Unit = {},
     onClickMedia: (String) -> Unit = {},
+    onEditTweet: (Post) -> Unit = {},
+    onDeleteTweet: (Post) -> Unit = {},
+    onReportTweet: (Post) -> Unit = {},
 ) {
     var isLiked by remember { mutableStateOf(tweet.isLiked) }
     var likeCount by remember { mutableStateOf(tweet.likeCount) }
     val interactionSource = remember { MutableInteractionSource() }
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Card(
         modifier =
@@ -160,18 +174,80 @@ fun ModernTweetCard(
                     }
                 }
 
-                Surface(
-                    onClick = { /* Show menu */ },
-                    shape = CircleShape,
-                    color = Color.Transparent,
-                    modifier = Modifier.size(40.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "More options",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(8.dp),
-                    )
+                Box {
+                    Surface(
+                        onClick = { menuExpanded = true },
+                        shape = CircleShape,
+                        color = Color.Transparent,
+                        modifier = Modifier.size(40.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More options",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(8.dp),
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false },
+                        modifier =
+                            Modifier.background(
+                                MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                    3.dp,
+                                ),
+                            ),
+                    ) {
+                        if (isMyTweet) {
+                            DropdownMenuItem(
+                                text = { Text("Edit") },
+                                onClick = {
+                                    onEditTweet(tweet)
+                                    menuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Edit,
+                                        contentDescription = "Edit Tweet",
+                                    )
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        "Delete",
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                },
+                                onClick = {
+                                    onDeleteTweet(tweet)
+                                    menuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Delete,
+                                        contentDescription = "Delete Tweet",
+                                        tint = MaterialTheme.colorScheme.error,
+                                    )
+                                },
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text("Report") },
+                                onClick = {
+                                    onReportTweet(tweet)
+                                    menuExpanded = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Report,
+                                        contentDescription = "Report Tweet",
+                                    )
+                                },
+                            )
+                        }
+                    }
                 }
             }
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.nyinyi.common.utils.ConnectionObserver
 import com.nyinyi.domain.usecase.auth.LogOutUseCase
 import com.nyinyi.domain.usecase.post.CreatePostUseCase
+import com.nyinyi.domain.usecase.post.DeletePostUseCase
 import com.nyinyi.domain.usecase.post.GetTimeLinePostUseCase
 import com.nyinyi.domain.usecase.post.LikePostUseCase
 import com.nyinyi.domain.usecase.post.UnLikeUseCase
@@ -39,6 +40,7 @@ class HomeViewModel
         private val getTimeLinePostUseCase: GetTimeLinePostUseCase,
         private val likePostUseCase: LikePostUseCase,
         private val unlikePostUseCase: UnLikeUseCase,
+        private val deletePostUseCase: DeletePostUseCase,
         private val connectionObserver: ConnectionObserver,
         private val dispatcherProvider: DispatcherProvider,
     ) : ViewModel() {
@@ -174,6 +176,17 @@ class HomeViewModel
                         loadTimelinePosts()
                     }.onFailure { exception ->
                         _event.emit(HomeEvent.Error("Failed to like post: ${exception.message}"))
+                    }
+            }
+        }
+
+        fun deletePost(post: Post) {
+            viewModelScope.launch(dispatcherProvider.io()) {
+                deletePostUseCase(post)
+                    .onSuccess {
+                        loadTimelinePosts()
+                    }.onFailure { exception ->
+                        _event.emit(HomeEvent.Error("Failed to delete post: ${exception.message}"))
                     }
             }
         }
