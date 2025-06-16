@@ -34,6 +34,7 @@ android {
 
 dependencies {
     implementation(project(":data"))
+    implementation(project(":domain-model"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

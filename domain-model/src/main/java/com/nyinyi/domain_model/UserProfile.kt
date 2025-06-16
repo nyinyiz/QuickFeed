@@ -7,4 +7,5 @@ data class UserProfile(
     val email: String,
     val profilePictureUrl: String?,
     val createdAt: Long,
+    val likedPosts: List<String> = emptyList(),
 )

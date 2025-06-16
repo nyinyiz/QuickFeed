@@ -69,6 +69,7 @@ class UserRepositoryImpl
                     "handle" to handle.lowercase(),
                     "email" to userEmail,
                     "profilePictureUrl" to null,
+                    "likedPosts" to emptyList<String>(),
                     "createdAt" to
                         com.google.firebase.firestore.FieldValue
                             .serverTimestamp(),
@@ -100,6 +101,7 @@ class UserRepositoryImpl
                             handle = doc.getString("handle") ?: "",
                             email = doc.getString("email") ?: auth.currentUser?.email ?: "",
                             profilePictureUrl = doc.getString("profilePictureUrl"),
+                            likedPosts = doc.get("likedPosts") as? List<String> ?: emptyList(),
                             createdAt = doc.getTimestamp("createdAt")?.seconds ?: 0L,
                         )
                     Result.success(profile)

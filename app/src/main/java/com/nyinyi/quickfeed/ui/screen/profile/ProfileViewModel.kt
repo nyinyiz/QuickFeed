@@ -6,9 +6,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nyinyi.common.utils.ConnectionObserver
-import com.nyinyi.domain.usecase.GetCurrentUserProfileUseCase
-import com.nyinyi.domain.usecase.IsProfileCompletedUseCase
-import com.nyinyi.domain.usecase.UpdateCurrentUserProfileUseCase
+import com.nyinyi.domain.usecase.user.GetCurrentUserProfileUseCase
+import com.nyinyi.domain.usecase.user.IsProfileCompletedUseCase
+import com.nyinyi.domain.usecase.user.UpdateCurrentUserProfileUseCase
 import com.nyinyi.domain_model.UserProfile
 import com.nyinyi.quickfeed.provider.DispatcherProvider
 import dagger.hilt.android.lifecycle.HiltViewModel

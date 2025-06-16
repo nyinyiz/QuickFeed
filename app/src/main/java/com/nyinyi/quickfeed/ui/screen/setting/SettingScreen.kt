@@ -1,8 +1,9 @@
 package com.nyinyi.quickfeed.ui.screen.setting
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,20 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Brightness4
-import androidx.compose.material.icons.filled.Brightness7
-import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AlternateEmail
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Policy
-import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -36,16 +32,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,29 +49,98 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nyinyi.quickfeed.R
+import com.nyinyi.quickfeed.ui.components.DialogState
+import com.nyinyi.quickfeed.ui.components.ReusableConfirmationDialog
+import com.nyinyi.quickfeed.ui.components.SettingItemWithSwitch
+import com.nyinyi.quickfeed.ui.components.StatusDialog
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
-
-// Enum for theme options
-enum class ThemeSetting {
-    SYSTEM,
-    LIGHT,
-    DARK,
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(
+    viewModel: SettingViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onThemeChange: (ThemeSetting) -> Unit = {},
+    onThemeChange: () -> Unit = {},
     logOutSuccess: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var dialogState by remember { mutableStateOf(DialogState()) }
+    var showLogoutConfirmDialog by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    var showThemeDialog by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
+
+    LaunchedEffect(Unit) {
+        viewModel.getDarkModeStatus()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is SettingUiEvent.LogOutSuccess -> {
+                    logOutSuccess()
+                }
+
+                is SettingUiEvent.Error -> {
+                    dialogState =
+                        DialogState(
+                            title = "Error",
+                            messageString = event.message,
+                            show = true,
+                            isError = true,
+                        )
+                }
+            }
+        }
+    }
+
+    val developerInfo = remember {
+        DeveloperInfo(
+            name = "Nyi Nyi",
+            role = "Android Engineer",
+            email = "nyinyizaw.dev@gmail.com",
+            portfolioUrl = "https://github.com/nyinyiz",
+            avatarResId = R.drawable.ic_launcher_foreground
+        )
+    }
+
+
+    if (dialogState.show) {
+        StatusDialog(
+            dialogState = dialogState,
+            onDismiss = {
+                dialogState = dialogState.copy(show = false)
+                if (dialogState.isError) {
+                    viewModel.clearError()
+                } else {
+                    viewModel.logOut()
+                }
+            },
+        )
+    }
+
+    if (showLogoutConfirmDialog) {
+        ReusableConfirmationDialog(
+            showDialog = showLogoutConfirmDialog,
+            onDismissRequest = {
+                showLogoutConfirmDialog = false
+            },
+            onConfirm = {
+                showLogoutConfirmDialog = false
+                viewModel.logOut()
+            },
+            title = "Logout",
+            text = "Are you sure you want to logout?",
+        )
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -86,7 +148,10 @@ fun SettingScreen(
             CenterAlignedTopAppBar(
                 colors =
                     TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        containerColor =
+                            MaterialTheme.colorScheme.primaryContainer.copy(
+                                alpha = 0.4f,
+                            ),
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                 title = {
@@ -102,7 +167,11 @@ fun SettingScreen(
                         modifier =
                             Modifier
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(
+                                        alpha = 0.5f,
+                                    ),
+                                ),
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
@@ -120,24 +189,27 @@ fun SettingScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(vertical = 8.dp), // Padding for the content list
+                    .padding(vertical = 8.dp),
         ) {
-            // --- Appearance Section ---
             item {
                 SettingsSectionTitle("Appearance")
-                SettingItem(
+                SettingItemWithSwitch(
                     icon = Icons.Default.Palette,
-                    title = "Theme",
+                    title = "Dark Mode",
                     subtitle =
-                        "SYSTEM"
-                            .replaceFirstChar { it.uppercase() },
-                    onClick = { showThemeDialog = true },
+                        "SYSTEM".replaceFirstChar { it.uppercase() },
+                    checked = uiState.isDarkMode,
+                    onCheckedChange = { checked ->
+                        viewModel.changeTheme(
+                            isDarkMode = checked,
+                        )
+                        onThemeChange()
+                    },
                 )
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // --- Account Section (Example) ---
             item {
                 SettingsSectionTitle("Account")
                 SettingItem(
@@ -149,45 +221,105 @@ fun SettingScreen(
                 SettingItem(
                     icon = Icons.AutoMirrored.Filled.Logout,
                     title = "Logout",
-                    onClick = { logOutSuccess() },
-                    titleColor = MaterialTheme.colorScheme.error, // Highlight logout
+                    onClick = {
+                        showLogoutConfirmDialog = true
+                    },
+                    titleColor = MaterialTheme.colorScheme.error,
                 )
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // --- About Section (Example) ---
             item {
                 SettingsSectionTitle("About")
                 SettingItem(
                     icon = Icons.Default.Info,
                     title = "App Version",
-                    subtitle = "viewModel.appVersion", // Get from ViewModel/BuildConfig
-                    onClick = {}, // Non-clickable or show more info
+                    subtitle = uiState.appVersion,
+                    onClick = {},
                 )
-                SettingItem(
-                    icon = Icons.Default.Policy,
-                    title = "Privacy Policy",
-                    onClick = { /* TODO: Open Privacy Policy URL */ },
-                )
-                SettingItem(
-                    icon = Icons.Default.Terminal, // Or Gavel for Terms
-                    title = "Terms of Service",
-                    onClick = { /* TODO: Open Terms of Service URL */ },
-                )
+            }
+
+            item {
+                SettingsSectionTitle("Developer")
+                DeveloperProfileItem(developerInfo = developerInfo, openUrl = { url ->
+                    uriHandler.openUri(url)
+                })
             }
         }
     }
+}
 
-    if (showThemeDialog) {
-        ThemeSelectionDialog(
-            currentTheme = ThemeSetting.LIGHT, // currentThemeSetting,
-            onThemeSelected = { theme ->
-//                viewModel.setThemeSetting(theme)
-                onThemeChange(theme)
-                showThemeDialog = false
-            },
-            onDismiss = { showThemeDialog = false },
+data class DeveloperInfo(
+    val name: String,
+    val role: String,
+    val email: String,
+    val portfolioUrl: String,
+    val avatarResId: Int? = null
+)
+
+@Composable
+fun DeveloperProfileItem(
+    developerInfo: DeveloperInfo,
+    openUrl: (String) -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+
+
+                developerInfo.avatarResId?.let {
+                    Image(
+                        painter = painterResource(id = it),
+                        contentDescription = "${developerInfo.name}'s avatar",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } ?: Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = "${developerInfo.name}'s avatar",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = developerInfo.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = developerInfo.role,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        SettingItem(
+            icon = Icons.Default.AlternateEmail,
+            title = "Email",
+            subtitle = developerInfo.email,
+            onClick = {
+
+                openUrl("mailto:${developerInfo.email}")
+            }
+        )
+        SettingItem(
+            icon = Icons.Default.Code,
+            title = "Portfolio / GitHub",
+            subtitle = developerInfo.portfolioUrl.removePrefix("https://"),
+            onClick = {
+                openUrl(developerInfo.portfolioUrl)
+            }
         )
     }
 }
@@ -219,10 +351,9 @@ fun SettingItem(
                 .fillMaxWidth()
                 .clickable(onClick = onClick, role = Role.Button)
                 .padding(horizontal = 8.dp),
-        // Reduce horizontal padding for ListItem
         colors =
             ListItemDefaults.colors(
-                containerColor = Color.Transparent, // Make ListItem transparent
+                containerColor = Color.Transparent,
             ),
         headlineContent = {
             Text(
@@ -245,174 +376,23 @@ fun SettingItem(
         leadingContent = {
             Icon(
                 imageVector = icon,
-                contentDescription = null, // Title is descriptive enough
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp),
-            )
-        },
-    )
-    HorizontalDivider(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        thickness = 0.5.dp,
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-    )
-}
-
-@Composable
-fun SettingItemWithSwitch(
-    icon: ImageVector,
-    title: String,
-    subtitle: String? = null,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    ListItem(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(
-                    onClick = { onCheckedChange(!checked) }, // Toggle on click
-                    role = Role.Switch,
-                ).padding(horizontal = 8.dp),
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        headlineContent = {
-            Text(
-                title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Normal,
-            )
-        },
-        supportingContent =
-            subtitle?.let {
-                { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            },
-        leadingContent = {
-            Icon(
-                imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp),
             )
         },
-        trailingContent = {
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                thumbContent =
-                    if (checked) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Brightness7, // Example icon for dark theme
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    } else {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Brightness4, // Example icon for light theme
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    },
-            )
-        },
     )
     HorizontalDivider(
         modifier = Modifier.padding(horizontal = 16.dp),
         thickness = 0.5.dp,
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
     )
-}
-
-@Composable
-fun ThemeSelectionDialog(
-    currentTheme: ThemeSetting,
-    onThemeSelected: (ThemeSetting) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(24.dp), // More rounded dialog
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh, // M3 dialog color
-                ),
-            modifier = Modifier.fillMaxWidth(0.9f), // Control dialog width
-        ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Text(
-                    "Choose Theme",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(bottom = 20.dp),
-                )
-
-                ThemeSetting.values().forEach { theme ->
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { onThemeSelected(theme) }
-                            .padding(vertical = 12.dp, horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
-                            selected = (theme == currentTheme),
-                            onClick = { onThemeSelected(theme) },
-                        )
-                        Spacer(Modifier.width(16.dp))
-                        Text(
-                            theme.name.lowercase().replaceFirstChar { it.uppercase() },
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.weight(1f))
-                        // Optional: Icon for each theme
-                        when (theme) {
-                            ThemeSetting.LIGHT ->
-                                Icon(
-                                    Icons.Default.Brightness7,
-                                    null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-
-                            ThemeSetting.DARK ->
-                                Icon(
-                                    Icons.Default.Brightness4,
-                                    null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-
-                            ThemeSetting.SYSTEM ->
-                                Icon(
-                                    Icons.Default.Contrast,
-                                    null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("CANCEL", color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-            }
-        }
-    }
 }
 
 @Preview(showBackground = true, name = "Settings Screen Light")
 @Composable
 fun SettingScreenPreviewLight() {
     QuickFeedTheme(darkTheme = false) {
-        // Use your app's theme
         Surface {
             SettingScreen(onNavigateBack = {})
         }
@@ -423,23 +403,8 @@ fun SettingScreenPreviewLight() {
 @Composable
 fun SettingScreenPreviewDark() {
     QuickFeedTheme(darkTheme = true) {
-        // Use your app's theme
         Surface {
             SettingScreen(onNavigateBack = {})
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Theme Dialog")
-@Composable
-fun ThemeDialogPreview() {
-    QuickFeedTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            ThemeSelectionDialog(
-                currentTheme = ThemeSetting.SYSTEM,
-                onThemeSelected = {},
-                onDismiss = {},
-            )
         }
     }
 }
