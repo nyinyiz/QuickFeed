@@ -1,5 +1,6 @@
 package com.nyinyi.quickfeed.ui.screen.profile
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.InputStream
 import javax.inject.Inject
 
 @HiltViewModel
@@ -80,7 +82,7 @@ class ProfileViewModel
         fun onSaveProfile(
             name: String,
             handle: String,
-            newProfileImageUri: Uri? = null,
+            newProfileImageUri: InputStream? = null,
         ) {
             Log.d("ProfileViewModel", "onSaveProfile: $name, $handle, $newProfileImageUri")
 
@@ -102,6 +104,13 @@ class ProfileViewModel
                 _uiState.update { it.copy(isSaving = false) }
             }
         }
+
+        private fun getInputStreamFromUri(
+            context: Context,
+            uri: Uri,
+        ): InputStream =
+            context.contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
     }
 
 data class ProfileUiState(

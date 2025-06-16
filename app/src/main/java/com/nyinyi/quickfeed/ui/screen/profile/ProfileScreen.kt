@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import java.io.InputStream
 
 @Composable
 fun ProfileScreen(
@@ -104,13 +105,15 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenContent(
     uiState: ProfileUiState,
-    onSaveProfile: (String, String, Uri?) -> Unit,
+    onSaveProfile: (String, String, InputStream?) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     var username by remember { mutableStateOf("") }
     var handle by remember { mutableStateOf("") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedImageUri by remember { mutableStateOf<InputStream?>(null) }
+    var selectedImage by remember { mutableStateOf<Uri?>(null) }
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     LaunchedEffect(uiState.userProfile) {
         uiState.userProfile?.let {
@@ -121,7 +124,8 @@ fun ProfileScreenContent(
 
     val photoPickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            selectedImageUri = uri
+            selectedImage = uri
+            selectedImageUri = uri?.let { context.contentResolver.openInputStream(it) }
         }
 
     Scaffold(
@@ -190,7 +194,7 @@ fun ProfileScreenContent(
                     uiState = uiState,
                     username = username,
                     handle = handle,
-                    selectedImageUri = selectedImageUri,
+                    selectedImageUri = selectedImage,
                     onUsernameChange = { username = it },
                     needToCompleteProfile = true,
                     onHandleChange = { handle = it },
@@ -208,7 +212,7 @@ fun ProfileScreenContent(
                     uiState = uiState,
                     username = username,
                     handle = handle,
-                    selectedImageUri = selectedImageUri,
+                    selectedImageUri = selectedImage,
                     onUsernameChange = { username = it },
                     onHandleChange = { handle = it },
                     onImagePickerClick = {
@@ -418,38 +422,40 @@ private fun ProfileImageSection(
                     modifier =
                         Modifier
                             .fillMaxSize()
-                            .clip(CircleShape),
+                            .clip(CircleShape)
+                            .clickable { onImagePickerClick() },
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(id = android.R.drawable.ic_menu_gallery),
                 )
 
-                // Edit overlay
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .background(
-                                Color.Black.copy(alpha = 0.3f),
-                                CircleShape,
-                            ).clickable { onImagePickerClick() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Surface(
-                        modifier = Modifier.size(40.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary,
-                        shadowElevation = 2.dp,
+                if (profilePictureUrl == null) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Color.Black.copy(alpha = 0.3f),
+                                    CircleShape,
+                                ).clickable { onImagePickerClick() },
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary,
+                            shadowElevation = 2.dp,
                         ) {
-                            Icon(
-                                Icons.Outlined.CameraAlt,
-                                contentDescription = "Change Picture",
-                                modifier = Modifier.size(20.dp),
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                            )
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Outlined.CameraAlt,
+                                    contentDescription = "Change Picture",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                )
+                            }
                         }
                     }
                 }

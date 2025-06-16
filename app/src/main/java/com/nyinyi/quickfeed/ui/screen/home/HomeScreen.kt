@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.R
+import com.nyinyi.quickfeed.ui.components.CircleProfileIcon
 import com.nyinyi.quickfeed.ui.components.DefaultAppGradientBackground
 import com.nyinyi.quickfeed.ui.components.SimpleCircleProfileIcon
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
@@ -179,6 +180,7 @@ fun FormattedTweetText(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TwitterTimelineScreen(
+    uiState: HomeUiState,
     onClickCreatePost: () -> Unit,
     onClickSettings: () -> Unit = {},
     onClickProfile: () -> Unit = {},
@@ -284,12 +286,19 @@ fun TwitterTimelineScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onClickProfile) {
-                        SimpleCircleProfileIcon(
-                            icon = Icons.Default.Person,
-                            size = 32.dp,
-                            backgroundColor = MaterialTheme.colorScheme.error,
-                            iconTint = Color.White,
-                        )
+                        if (uiState.userProfile == null) {
+                            SimpleCircleProfileIcon(
+                                icon = Icons.Default.Person,
+                                size = 32.dp,
+                                backgroundColor = MaterialTheme.colorScheme.primary,
+                                iconTint = Color.White,
+                            )
+                        } else {
+                            CircleProfileIcon(
+                                imageUrl = uiState.userProfile.profilePictureUrl,
+                                size = 32.dp,
+                            )
+                        }
                     }
                 },
                 modifier =
@@ -476,6 +485,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.checkProfileCompletion()
     }
+
     if (uiState.userProfileNotCompleted) {
         AlertDialog(
             onDismissRequest = {
@@ -492,6 +502,7 @@ fun HomeScreen(
     }
 
     TwitterTimelineScreen(
+        uiState = uiState,
         onClickCreatePost = {
             viewModel.logOut {
                 logOutSuccess()
@@ -508,7 +519,10 @@ fun TwitterTimelineScreenPreviewLight() {
     QuickFeedTheme(
         darkTheme = false,
     ) {
-        TwitterTimelineScreen(onClickCreatePost = {})
+        TwitterTimelineScreen(
+            uiState = HomeUiState(),
+            onClickCreatePost = {},
+        )
     }
 }
 
@@ -518,6 +532,6 @@ fun TwitterTimelineScreenPreviewDark() {
     QuickFeedTheme(
         darkTheme = true,
     ) {
-        TwitterTimelineScreen(onClickCreatePost = {})
+        TwitterTimelineScreen(uiState = HomeUiState(), onClickCreatePost = {})
     }
 }

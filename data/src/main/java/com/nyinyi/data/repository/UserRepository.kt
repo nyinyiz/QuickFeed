@@ -1,7 +1,7 @@
 package com.nyinyi.data.repository
 
-import android.net.Uri
 import com.nyinyi.domain_model.UserProfile
+import java.io.InputStream
 
 interface UserRepository {
     fun getCurrentUserId(): String?
@@ -18,6 +18,6 @@ interface UserRepository {
     suspend fun updateUserProfile(
         newUsername: String,
         newHandle: String,
-        newProfilePictureUri: Uri?,
+        newProfilePictureUri: InputStream?,
     ): Result<Unit>
 }
