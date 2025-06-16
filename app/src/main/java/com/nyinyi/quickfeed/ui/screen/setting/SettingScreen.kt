@@ -1,22 +1,28 @@
 package com.nyinyi.quickfeed.ui.screen.setting
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AlternateEmail
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Policy
-import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,17 +43,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nyinyi.quickfeed.R
 import com.nyinyi.quickfeed.ui.components.DialogState
 import com.nyinyi.quickfeed.ui.components.ReusableConfirmationDialog
 import com.nyinyi.quickfeed.ui.components.SettingItemWithSwitch
@@ -65,8 +75,8 @@ fun SettingScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var dialogState by remember { mutableStateOf(DialogState()) }
     var showLogoutConfirmDialog by remember { mutableStateOf(false) }
-
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit) {
         viewModel.getDarkModeStatus()
@@ -91,6 +101,17 @@ fun SettingScreen(
             }
         }
     }
+
+    val developerInfo = remember {
+        DeveloperInfo(
+            name = "Nyi Nyi",
+            role = "Android Engineer",
+            email = "nyinyizaw.dev@gmail.com",
+            portfolioUrl = "https://github.com/nyinyiz",
+            avatarResId = R.drawable.ic_launcher_foreground
+        )
+    }
+
 
     if (dialogState.show) {
         StatusDialog(
@@ -217,18 +238,89 @@ fun SettingScreen(
                     subtitle = uiState.appVersion,
                     onClick = {},
                 )
-                SettingItem(
-                    icon = Icons.Default.Policy,
-                    title = "Privacy Policy",
-                    onClick = { /* TODO: Open Privacy Policy URL */ },
+            }
+
+            item {
+                SettingsSectionTitle("Developer")
+                DeveloperProfileItem(developerInfo = developerInfo, openUrl = { url ->
+                    uriHandler.openUri(url)
+                })
+            }
+        }
+    }
+}
+
+data class DeveloperInfo(
+    val name: String,
+    val role: String,
+    val email: String,
+    val portfolioUrl: String,
+    val avatarResId: Int? = null
+)
+
+@Composable
+fun DeveloperProfileItem(
+    developerInfo: DeveloperInfo,
+    openUrl: (String) -> Unit,
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+
+
+                developerInfo.avatarResId?.let {
+                    Image(
+                        painter = painterResource(id = it),
+                        contentDescription = "${developerInfo.name}'s avatar",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } ?: Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = "${developerInfo.name}'s avatar",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                SettingItem(
-                    icon = Icons.Default.Terminal,
-                    title = "Terms of Service",
-                    onClick = { /* TODO: Open Terms of Service URL */ },
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = developerInfo.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = developerInfo.role,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        SettingItem(
+            icon = Icons.Default.AlternateEmail,
+            title = "Email",
+            subtitle = developerInfo.email,
+            onClick = {
+
+                openUrl("mailto:${developerInfo.email}")
+            }
+        )
+        SettingItem(
+            icon = Icons.Default.Code,
+            title = "Portfolio / GitHub",
+            subtitle = developerInfo.portfolioUrl.removePrefix("https://"),
+            onClick = {
+                openUrl(developerInfo.portfolioUrl)
+            }
+        )
     }
 }
 
