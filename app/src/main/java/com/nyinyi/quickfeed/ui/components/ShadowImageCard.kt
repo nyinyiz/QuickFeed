@@ -7,6 +7,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -54,16 +55,12 @@ fun ShadowImageCard(
     aspectRatio: Float? = null,
     height: Dp? = 220.dp,
     contentScale: ContentScale = ContentScale.Crop,
-    placeholder: (@Composable () -> Unit)? = null,
     errorContent: (@Composable () -> Unit)? = null,
-    loadingContent: (@Composable () -> Unit)? = null,
     overlayContent: (@Composable BoxScope.() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     contentDescription: String = "Image",
-    showShimmer: Boolean = true,
     containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
     borderColor: Color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-    shadowColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
 ) {
     val cardModifier =
         modifier
@@ -76,7 +73,11 @@ fun ShadowImageCard(
             }
 
     Card(
-        modifier = cardModifier,
+        modifier =
+            cardModifier.clickable(
+                enabled = onClick != null,
+                onClick = { onClick?.invoke() },
+            ),
         shape = shape,
         colors =
             CardDefaults.cardColors(

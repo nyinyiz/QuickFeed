@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.nyinyi.quickfeed.R
 import com.nyinyi.quickfeed.ui.components.CircleProfileIcon
 import com.nyinyi.quickfeed.ui.components.DefaultAppGradientBackground
+import com.nyinyi.quickfeed.ui.components.FullScreenImageViewerAlertBox
 import com.nyinyi.quickfeed.ui.components.SimpleCircleProfileIcon
 import com.nyinyi.quickfeed.ui.theme.QuickFeedTheme
 
@@ -65,6 +66,8 @@ fun TwitterTimelineScreen(
     onClickUnLike: (String) -> Unit = {},
 ) {
     val lazyListState = rememberLazyListState()
+    var isImagViewerVisible by remember { mutableStateOf(false) }
+    var selectedImageUrl by remember { mutableStateOf<String?>(null) }
 
     val scrollBehavior =
         remember {
@@ -255,7 +258,6 @@ fun TwitterTimelineScreen(
                         ) { index, post ->
                             ModernTweetCard(
                                 tweet = post,
-                                index = index,
                                 onClickLike = { isLiked ->
                                     if (isLiked) {
                                         onClickLike(post.id)
@@ -263,11 +265,24 @@ fun TwitterTimelineScreen(
                                         onClickUnLike(post.id)
                                     }
                                 },
+                                onClickMedia = { imageUrl ->
+                                    selectedImageUrl = imageUrl
+                                    isImagViewerVisible = true
+                                },
                             )
                         }
                     }
                 }
             }
+
+            FullScreenImageViewerAlertBox(
+                imageUrl = selectedImageUrl,
+                onDismissRequest = {
+                    selectedImageUrl = null
+                    isImagViewerVisible = false
+                },
+                isVisible = isImagViewerVisible,
+            )
         }
     }
 }

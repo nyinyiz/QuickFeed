@@ -58,8 +58,8 @@ import com.nyinyi.quickfeed.ui.utils.toReadableTimestamp
 @Composable
 fun ModernTweetCard(
     tweet: Post,
-    index: Int,
     onClickLike: (Boolean) -> Unit = {},
+    onClickMedia: (String) -> Unit = {},
 ) {
     var isLiked by remember { mutableStateOf(tweet.isLiked) }
     var likeCount by remember { mutableStateOf(tweet.likeCount) }
@@ -188,6 +188,9 @@ fun ModernTweetCard(
                     imageUrl = imageUrl,
                     modifier = Modifier.fillMaxWidth(),
                     elevation = 24.dp,
+                    onClick = {
+                        onClickMedia(imageUrl)
+                    },
                 )
             }
 
