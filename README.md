@@ -64,7 +64,9 @@ QuickFeed is a lightweight Android social media app for user sign-up, login, tex
 - **:common**: Shared utilities (dispatchers, error handling).
 
 ## 🧪 Testing
-- Unit tests in `:domain` for business logic.
+- **Unit Tests**: Located in the `:domain` module to validate core business logic, independent of UI and data sources.
+- **Execution**: Run tests using the following command in the project root:
+- ```./gradlew test```
 
 
 ## 👤 Author
