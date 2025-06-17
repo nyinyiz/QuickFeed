@@ -102,7 +102,6 @@ class PostRepositoryImpl
 
         override suspend fun getTimelinePosts(): Flow<Result<List<Post>>> {
             val currentUserId = getCurrentUserId()
-
             if (currentUserId == null) {
                 return flowOf(Result.failure(Exception("No user logged in.")))
             }
@@ -148,13 +147,64 @@ class PostRepositoryImpl
                     userResult.isFailure -> userResult.map { emptyList<Post>() }
                     postsResult.isFailure -> postsResult
                     else -> {
-                        val likedPostsIds = userResult.getOrNull() ?: emptyList()
-                        val posts = postsResult.getOrNull() ?: emptyList()
-                        Result.success(
-                            posts.map { post ->
-                                post.copy(isLiked = likedPostsIds.contains(post.id))
-                            },
-                        )
+                        try {
+                            val likedPostsIds = userResult.getOrNull() ?: emptyList()
+                            val posts = postsResult.getOrNull() ?: emptyList()
+
+                            // Get unique author UIDs
+                            val uniqueAuthorUids = posts.map { it.authorUid }.distinct()
+
+                            // Batch fetch all user profiles
+                            val userProfiles = mutableMapOf<String, UserProfile?>()
+                            uniqueAuthorUids.forEach { authorUid ->
+                                try {
+                                    val authorDoc = usersCollection.document(authorUid).get().await()
+                                    if (authorDoc.exists()) {
+                                        val profile =
+                                            UserProfile(
+                                                userId = authorDoc.getString("userId") ?: authorUid,
+                                                username = authorDoc.getString("username") ?: "",
+                                                handle = authorDoc.getString("handle") ?: "",
+                                                email = authorDoc.getString("email") ?: "",
+                                                profilePictureUrl = authorDoc.getString("profilePictureUrl"),
+                                                likedPosts = emptyList(), // Not needed for display
+                                                createdAt =
+                                                    authorDoc.getTimestamp("createdAt")?.seconds
+                                                        ?: 0L,
+                                            )
+                                        userProfiles[authorUid] = profile
+                                    } else {
+                                        userProfiles[authorUid] = null
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e(
+                                        "PostRepositoryImpl",
+                                        "Error fetching user data for UID: $authorUid",
+                                        e,
+                                    )
+                                    userProfiles[authorUid] = null
+                                }
+                            }
+
+                            // Update posts with fresh user data
+                            val postsWithUpdatedUserInfo =
+                                posts.map { post ->
+                                    val authorProfile = userProfiles[post.authorUid]
+                                    post.copy(
+                                        isLiked = likedPostsIds.contains(post.id),
+                                        authorUsername = authorProfile?.username ?: post.authorUsername,
+                                        authorHandle = authorProfile?.handle ?: post.authorHandle,
+                                        authorProfilePictureUrl =
+                                            authorProfile?.profilePictureUrl
+                                                ?: post.authorProfilePictureUrl,
+                                    )
+                                }
+
+                            Result.success(postsWithUpdatedUserInfo)
+                        } catch (e: Exception) {
+                            Log.e("PostRepositoryImpl", "Error processing timeline posts", e)
+                            Result.failure(e)
+                        }
                     }
                 }
             }
