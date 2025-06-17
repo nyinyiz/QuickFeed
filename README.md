@@ -3,7 +3,21 @@
 QuickFeed is a lightweight Android social media app for user sign-up, login, text/image posts, and a real-time timeline.
 
 ## 📸 Screenshots
-
+<div align="center">
+  <img src="screenshots/ss1.png" alt="Android Screenshot 1" width="200">
+  <img src="screenshots/ss2.png" alt="Android Screenshot 2" width="200">
+  <img src="screenshots/ss3.png" alt="Android Screenshot 3" width="200">
+</div>
+<div align="center">
+  <img src="screenshots/ss8.png" alt="Android Screenshot 1" width="200">
+  <img src="screenshots/ss4.png" alt="Android Screenshot 2" width="200">
+  <img src="screenshots/ss5.png" alt="Android Screenshot 3" width="200">
+</div>
+<div align="center">
+  <img src="screenshots/ss6.png" alt="Android Screenshot 1" width="200">
+  <img src="screenshots/ss7.png" alt="Android Screenshot 2" width="200">
+  <img src="screenshots/ss9.png" alt="Android Screenshot 3" width="200">
+</div>
 
 ## ✨ Features
 - **Authentication**: Sign-up, login, logout via Firebase Authentication.
