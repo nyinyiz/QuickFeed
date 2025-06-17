@@ -70,10 +70,9 @@ dependencies {
 
     implementation(libs.material.icons.extended)
 
-    implementation(libs.firebase.bom)
-    implementation(libs.firebase.analytics)
-
-    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
 
     implementation(libs.kotlinx.serialization)
 
