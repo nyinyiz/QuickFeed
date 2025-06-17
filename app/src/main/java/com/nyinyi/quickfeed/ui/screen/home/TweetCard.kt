@@ -22,12 +22,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
@@ -55,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nyinyi.domain_model.Post
@@ -78,6 +76,7 @@ fun ModernTweetCard(
     var likeCount by remember { mutableStateOf(tweet.likeCount) }
     val interactionSource = remember { MutableInteractionSource() }
     var menuExpanded by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
     Card(
         modifier =
@@ -256,6 +255,9 @@ fun ModernTweetCard(
             FormattedTweetText(
                 content = tweet.content,
                 modifier = Modifier.fillMaxWidth(),
+                onUrlClick = { url ->
+                    uriHandler.openUri(url)
+                },
             )
 
             tweet.imageUrl?.let { imageUrl ->
