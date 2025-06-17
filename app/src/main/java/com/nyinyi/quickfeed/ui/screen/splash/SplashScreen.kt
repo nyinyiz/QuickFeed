@@ -4,7 +4,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -84,26 +86,13 @@ fun SplashScreen(
         color = Color.Transparent,
     ) {
         AppGradientBackground {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                ParticleAnimationBackground(
-                    particleBaseColor = MaterialTheme.colorScheme.secondary,
-                    particleCount = 25,
-                )
-
-                AsyncImage(
-                    model = R.drawable.ic_launcher_foreground,
-                    contentDescription = stringResource(R.string.app_name),
-                    modifier =
-                        Modifier
-                            .size(100.dp)
-                            .scale(logoScale.value)
-                            .alpha(logoAlpha.value),
-                )
-                when (uiState) {
-                    is SplashState.Disconnected -> {
+            when (uiState) {
+                is SplashState.Disconnected -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
                             text = "No Internet Connection",
@@ -119,8 +108,28 @@ fun SplashScreen(
                             textAlign = TextAlign.Center,
                         )
                     }
+                }
 
-                    else -> {}
+                else -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        ParticleAnimationBackground(
+                            particleBaseColor = MaterialTheme.colorScheme.secondary,
+                            particleCount = 25,
+                        )
+
+                        AsyncImage(
+                            model = R.drawable.ic_launcher_foreground,
+                            contentDescription = stringResource(R.string.app_name),
+                            modifier =
+                                Modifier
+                                    .size(100.dp)
+                                    .scale(logoScale.value)
+                                    .alpha(logoAlpha.value),
+                        )
+                    }
                 }
             }
         }

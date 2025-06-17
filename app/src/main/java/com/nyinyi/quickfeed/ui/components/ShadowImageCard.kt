@@ -7,6 +7,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -37,10 +38,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 
 @Composable
 fun ShadowImageCard(
@@ -51,16 +55,12 @@ fun ShadowImageCard(
     aspectRatio: Float? = null,
     height: Dp? = 220.dp,
     contentScale: ContentScale = ContentScale.Crop,
-    placeholder: (@Composable () -> Unit)? = null,
     errorContent: (@Composable () -> Unit)? = null,
-    loadingContent: (@Composable () -> Unit)? = null,
     overlayContent: (@Composable BoxScope.() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     contentDescription: String = "Image",
-    showShimmer: Boolean = true,
     containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
     borderColor: Color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-    shadowColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
 ) {
     val cardModifier =
         modifier
@@ -73,7 +73,11 @@ fun ShadowImageCard(
             }
 
     Card(
-        modifier = cardModifier,
+        modifier =
+            cardModifier.clickable(
+                enabled = onClick != null,
+                onClick = { onClick?.invoke() },
+            ),
         shape = shape,
         colors =
             CardDefaults.cardColors(
@@ -101,10 +105,16 @@ fun ShadowImageCard(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize(),
         ) {
-            // Image Content
             if (imageUrl != null) {
                 AsyncImage(
-                    model = imageUrl,
+                    model =
+                        ImageRequest
+                            .Builder(LocalContext.current)
+                            .data(imageUrl)
+                            .memoryCachePolicy(CachePolicy.ENABLED)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .networkCachePolicy(CachePolicy.ENABLED)
+                            .build(),
                     contentDescription = contentDescription,
                     modifier =
                         Modifier
@@ -113,17 +123,14 @@ fun ShadowImageCard(
                     contentScale = contentScale,
                 )
             } else {
-                // No image URL provided
                 errorContent?.invoke() ?: DefaultErrorContent()
             }
 
-            // Overlay Content
             overlayContent?.invoke(this)
         }
     }
 }
 
-// Default components
 @Composable
 private fun DefaultErrorContent() {
     Box(
@@ -172,7 +179,6 @@ private fun DefaultLoadingContent() {
     )
 }
 
-// Extension function for shimmer effect
 @Composable
 fun Modifier.shimmerEffect(): Modifier {
     val shimmerColors =
@@ -205,7 +211,6 @@ fun Modifier.shimmerEffect(): Modifier {
     )
 }
 
-// Usage Examples
 @Preview
 @Composable
 fun ShadowImageCardPreview() {
@@ -213,13 +218,10 @@ fun ShadowImageCardPreview() {
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // Basic usage
         ShadowImageCard(
             imageUrl = "https://example.com/image.jpg",
             modifier = Modifier.fillMaxWidth(),
         )
-
-        // Square aspect ratio
         ShadowImageCard(
             imageUrl = "https://example.com/profile.jpg",
             modifier = Modifier.size(120.dp),
@@ -228,7 +230,6 @@ fun ShadowImageCardPreview() {
             elevation = 4.dp,
         )
 
-        // With custom overlay
         ShadowImageCard(
             imageUrl = "https://example.com/banner.jpg",
             modifier =
@@ -262,7 +263,6 @@ fun ShadowImageCardPreview() {
             },
         )
 
-        // Circular profile image
         ShadowImageCard(
             imageUrl = "https://example.com/avatar.jpg",
             modifier = Modifier.size(80.dp),
@@ -272,7 +272,6 @@ fun ShadowImageCardPreview() {
             onClick = { /* Handle click */ },
         )
 
-        // Custom error content
         ShadowImageCard(
             imageUrl = null,
             modifier =

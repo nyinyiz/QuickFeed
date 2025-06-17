@@ -19,3 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class com.google.cloud.** { *; }
+-keep class com.google.auth.** { *; }
+-dontwarn com.google.cloud.**
+-dontwarn com.google.auth.**
+-keep class io.ktor.** { *; }
+-keepnames class kotlinx.coroutines.** { *; }
+# Add any Supabase specific rules here

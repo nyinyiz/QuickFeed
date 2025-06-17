@@ -69,9 +69,9 @@ fun CircleProfileIcon(
     }
 }
 
-// Alternative simple version without image loading
 @Composable
 fun SimpleCircleProfileIcon(
+    profilePictureUrl: String? = null,
     icon: ImageVector = Icons.Default.Person,
     size: Dp = 48.dp,
     shadowElevation: Dp = 4.dp,
@@ -100,7 +100,6 @@ fun SimpleCircleProfileIcon(
     }
 }
 
-// Usage examples
 @Preview
 @Composable
 fun ProfileIconPreview() {
@@ -108,13 +107,11 @@ fun ProfileIconPreview() {
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // With image URL
         CircleProfileIcon(
             imageUrl = "https://example.com/profile.jpg",
             size = 64.dp,
         )
 
-        // Simple icon version
         SimpleCircleProfileIcon(
             icon = Icons.Default.Person,
             size = 56.dp,
@@ -122,7 +119,6 @@ fun ProfileIconPreview() {
             iconTint = Color.White,
         )
 
-        // Different icon
         SimpleCircleProfileIcon(
             icon = Icons.Default.AccountCircle,
             size = 72.dp,

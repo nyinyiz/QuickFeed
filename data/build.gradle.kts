@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,16 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
 }
+val localProperties =
+    Properties().apply {
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            load(localPropertiesFile.inputStream())
+        }
+    }
+
+val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: ""
+val supabaseAnonKey = localProperties.getProperty("SUPABASE_ANON_KEY") ?: ""
 
 android {
     namespace = "com.nyinyi.data"
@@ -18,7 +30,14 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+            buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
+        }
         release {
+            buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+            buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
+
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -33,13 +52,29 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        buildConfig = true
+    }
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 dependencies {
+    implementation(project(":domain-model"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockk.android)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -47,7 +82,14 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-appcheck-playintegrity")
+
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.0.0"))
+    implementation("io.github.jan-tennert.supabase:storage-kt:3.0.0")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.6.1")
+
+    implementation("io.ktor:ktor-client-android:3.0.0")
 
     // KotlinX
     implementation(libs.kotlinx.serialization)
@@ -68,4 +110,5 @@ dependencies {
 
     // Inject
     implementation(libs.inject)
+    testImplementation(kotlin("test"))
 }

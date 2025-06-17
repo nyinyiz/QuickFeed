@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -12,6 +13,7 @@ class AuthRepositoryImpl
     @Inject
     constructor(
         private val auth: FirebaseAuth,
+        private val firestore: FirebaseFirestore,
     ) : AuthRepository {
         override fun getCurrentUserId(): String? {
             Log.d("", "Current User Id : ${auth.currentUser?.uid}")
@@ -26,6 +28,23 @@ class AuthRepositoryImpl
         ): Result<Unit> =
             try {
                 auth.createUserWithEmailAndPassword(email, password).await()
+                val userProfile =
+                    mapOf(
+                        "userId" to auth.currentUser!!.uid,
+                        "username" to "",
+                        "handle" to "",
+                        "email" to email,
+                        "profilePictureUrl" to null,
+                        "createdAt" to
+                            com.google.firebase.firestore.FieldValue
+                                .serverTimestamp(),
+                    )
+                firestore
+                    .collection("users")
+                    .document(auth.currentUser!!.uid)
+                    .set(userProfile)
+                    .await()
+
                 Result.success(Unit)
             } catch (e: FirebaseAuthException) {
                 Result.failure(Exception(getSignUpErrorMessage(e.errorCode), e))
