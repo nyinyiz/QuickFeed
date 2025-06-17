@@ -102,16 +102,16 @@ fun SettingScreen(
         }
     }
 
-    val developerInfo = remember {
-        DeveloperInfo(
-            name = "Nyi Nyi",
-            role = "Android Engineer",
-            email = "nyinyizaw.dev@gmail.com",
-            portfolioUrl = "https://github.com/nyinyiz",
-            avatarResId = R.drawable.ic_launcher_foreground
-        )
-    }
-
+    val developerInfo =
+        remember {
+            DeveloperInfo(
+                name = "Nyi Nyi",
+                role = "Android Engineer",
+                email = "nyinyizaw.dev@gmail.com",
+                portfolioUrl = "https://github.com/nyinyiz",
+                avatarResId = R.drawable.ic_launcher_foreground,
+            )
+        }
 
     if (dialogState.show) {
         StatusDialog(
@@ -255,7 +255,7 @@ data class DeveloperInfo(
     val role: String,
     val email: String,
     val portfolioUrl: String,
-    val avatarResId: Int? = null
+    val avatarResId: Int? = null,
 )
 
 @Composable
@@ -266,26 +266,26 @@ fun DeveloperProfileItem(
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                modifier =
+                    Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
             ) {
-
-
                 developerInfo.avatarResId?.let {
                     Image(
                         painter = painterResource(id = it),
                         contentDescription = "${developerInfo.name}'s avatar",
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                 } ?: Icon(
                     Icons.Default.AccountCircle,
                     contentDescription = "${developerInfo.name}'s avatar",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -294,12 +294,12 @@ fun DeveloperProfileItem(
                     text = developerInfo.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = developerInfo.role,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -309,9 +309,8 @@ fun DeveloperProfileItem(
             title = "Email",
             subtitle = developerInfo.email,
             onClick = {
-
                 openUrl("mailto:${developerInfo.email}")
-            }
+            },
         )
         SettingItem(
             icon = Icons.Default.Code,
@@ -319,7 +318,7 @@ fun DeveloperProfileItem(
             subtitle = developerInfo.portfolioUrl.removePrefix("https://"),
             onClick = {
                 openUrl(developerInfo.portfolioUrl)
-            }
+            },
         )
     }
 }
