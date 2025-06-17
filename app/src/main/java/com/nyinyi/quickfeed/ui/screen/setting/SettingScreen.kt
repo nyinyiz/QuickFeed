@@ -1,5 +1,6 @@
 package com.nyinyi.quickfeed.ui.screen.setting
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,15 +16,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.AlternateEmail
-import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -37,6 +43,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,19 +53,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nyinyi.quickfeed.R
 import com.nyinyi.quickfeed.ui.components.DialogState
+import com.nyinyi.quickfeed.ui.components.ProjectInfoFullScreenDialog
 import com.nyinyi.quickfeed.ui.components.ReusableConfirmationDialog
 import com.nyinyi.quickfeed.ui.components.SettingItemWithSwitch
 import com.nyinyi.quickfeed.ui.components.StatusDialog
@@ -75,6 +86,7 @@ fun SettingScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var dialogState by remember { mutableStateOf(DialogState()) }
     var showLogoutConfirmDialog by remember { mutableStateOf(false) }
+    var showProjectInfoDialog by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val uriHandler = LocalUriHandler.current
 
@@ -139,6 +151,12 @@ fun SettingScreen(
             },
             title = "Logout",
             text = "Are you sure you want to logout?",
+        )
+    }
+
+    if (showProjectInfoDialog) {
+        ProjectInfoFullScreenDialog(
+            onDismissRequest = { showProjectInfoDialog = false },
         )
     }
 
@@ -238,13 +256,27 @@ fun SettingScreen(
                     subtitle = uiState.appVersion,
                     onClick = {},
                 )
+                SettingItem(
+                    icon = Icons.Default.Build,
+                    title = "About This Project",
+                    subtitle = "Features, tech stack, and status",
+                    onClick = {
+                        showProjectInfoDialog = true
+                    },
+                )
             }
 
             item {
                 SettingsSectionTitle("Developer")
-                DeveloperProfileItem(developerInfo = developerInfo, openUrl = { url ->
-                    uriHandler.openUri(url)
-                })
+                DeveloperProfileCard(
+                    developerInfo = developerInfo,
+                    onEmailClick = {
+                        uriHandler.openUri("mailto:${developerInfo.email}")
+                    },
+                    onPortfolioClick = {
+                        uriHandler.openUri(developerInfo.portfolioUrl)
+                    },
+                )
             }
         }
     }
@@ -259,66 +291,150 @@ data class DeveloperInfo(
 )
 
 @Composable
-fun DeveloperProfileItem(
+fun DeveloperProfileCard(
     developerInfo: DeveloperInfo,
-    openUrl: (String) -> Unit,
+    onEmailClick: () -> Unit,
+    onPortfolioClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier =
-                    Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+    Card(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+            ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                developerInfo.avatarResId?.let {
-                    Image(
-                        painter = painterResource(id = it),
-                        contentDescription = "${developerInfo.name}'s avatar",
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                } ?: Icon(
-                    Icons.Default.AccountCircle,
-                    contentDescription = "${developerInfo.name}'s avatar",
+                Box(
                     modifier =
                         Modifier
-                            .fillMaxSize()
-                            .padding(8.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(
+                                brush =
+                                    Brush.linearGradient(
+                                        colors =
+                                            listOf(
+                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
+                                            ),
+                                    ),
+                            ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    developerInfo.avatarResId?.let {
+                        Image(
+                            painter = painterResource(id = it),
+                            contentDescription = "${developerInfo.name}'s avatar",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    } ?: Icon(
+                        Icons.Filled.AccountCircle,
+                        contentDescription = "${developerInfo.name}'s avatar",
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(12.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(20.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = developerInfo.name,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = developerInfo.role,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = developerInfo.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = developerInfo.role,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            DeveloperInfoRow(
+                icon = Icons.Outlined.Email,
+                text = developerInfo.email,
+                onClick = onEmailClick,
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+            )
+
+            DeveloperInfoRow(
+                icon = Icons.Default.Link,
+                text = developerInfo.portfolioUrl.removePrefix("https://"),
+                onClick = onPortfolioClick,
+            )
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        SettingItem(
-            icon = Icons.Default.AlternateEmail,
-            title = "Email",
-            subtitle = developerInfo.email,
-            onClick = {
-                openUrl("mailto:${developerInfo.email}")
-            },
+    }
+}
+
+@Composable
+private fun DeveloperInfoRow(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clip(
+                    androidx.compose.foundation.shape
+                        .RoundedCornerShape(12.dp),
+                ).clickable(onClick = onClick)
+                .padding(vertical = 12.dp, horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp),
         )
-        SettingItem(
-            icon = Icons.Default.Code,
-            title = "Portfolio / GitHub",
-            subtitle = developerInfo.portfolioUrl.removePrefix("https://"),
-            onClick = {
-                openUrl(developerInfo.portfolioUrl)
-            },
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            imageVector = Icons.Filled.ArrowForwardIos,
+            contentDescription = "Open link",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            modifier = Modifier.size(16.dp),
         )
     }
 }
