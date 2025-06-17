@@ -156,10 +156,10 @@ class PostRepositoryImplTest {
             every { userDocumentSnapshot.getString("email") } returns "test@example.com"
             every { userDocumentSnapshot.getString("profilePictureUrl") } returns "https://example.com/profile.jpg"
             every { userDocumentSnapshot.get("likedPosts") } returns
-                    listOf(
-                        "liked_post_1",
-                        "liked_post_2",
-                    )
+                listOf(
+                    "liked_post_1",
+                    "liked_post_2",
+                )
             every { userDocumentSnapshot.getTimestamp("createdAt")?.seconds } returns 1234567890L
 
             // When
