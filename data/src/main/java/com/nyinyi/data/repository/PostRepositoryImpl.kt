@@ -151,10 +151,8 @@ class PostRepositoryImpl
                             val likedPostsIds = userResult.getOrNull() ?: emptyList()
                             val posts = postsResult.getOrNull() ?: emptyList()
 
-                            // Get unique author UIDs
                             val uniqueAuthorUids = posts.map { it.authorUid }.distinct()
 
-                            // Batch fetch all user profiles
                             val userProfiles = mutableMapOf<String, UserProfile?>()
                             uniqueAuthorUids.forEach { authorUid ->
                                 try {
@@ -167,7 +165,7 @@ class PostRepositoryImpl
                                                 handle = authorDoc.getString("handle") ?: "",
                                                 email = authorDoc.getString("email") ?: "",
                                                 profilePictureUrl = authorDoc.getString("profilePictureUrl"),
-                                                likedPosts = emptyList(), // Not needed for display
+                                                likedPosts = emptyList(),
                                                 createdAt =
                                                     authorDoc.getTimestamp("createdAt")?.seconds
                                                         ?: 0L,
@@ -186,7 +184,6 @@ class PostRepositoryImpl
                                 }
                             }
 
-                            // Update posts with fresh user data
                             val postsWithUpdatedUserInfo =
                                 posts.map { post ->
                                     val authorProfile = userProfiles[post.authorUid]
