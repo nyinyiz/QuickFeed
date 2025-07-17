@@ -5,7 +5,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
+import androidx.navigation.toRoute
 import com.nyinyi.quickfeed.ui.screen.createPost.CreatePostScreen
+import com.nyinyi.quickfeed.ui.screen.editPost.EditPostScreen
 import com.nyinyi.quickfeed.ui.screen.home.HomeScreen
 import com.nyinyi.quickfeed.ui.screen.login.LoginScreen
 import com.nyinyi.quickfeed.ui.screen.profile.ProfileScreen
@@ -13,6 +15,7 @@ import com.nyinyi.quickfeed.ui.screen.register.RegisterScreen
 import com.nyinyi.quickfeed.ui.screen.setting.SettingScreen
 import com.nyinyi.quickfeed.ui.screen.splash.SplashScreen
 import com.nyinyi.quickfeed.ui.screen.welcome.WelcomeScreen
+import timber.log.Timber
 
 @Composable
 fun SetUpNavGraph(
@@ -156,6 +159,15 @@ fun SetUpNavGraph(
                         route = Routes.CreatePostScreen,
                     )
                 },
+                onEditTweet = { postId ->
+                    Timber.d("Edit post clicked for postId: $postId")
+                    navController.navigate(
+                        route = Routes.EditPostScreen(
+                            postId = postId
+                        ),
+                    )
+                }
+
             )
         }
 
@@ -195,6 +207,18 @@ fun SetUpNavGraph(
                     navController.popBackStack()
                 },
             )
+        }
+
+        composable<Routes.EditPostScreen> { backStackEntry ->
+            val args = backStackEntry.toRoute<Routes.EditPostScreen>()
+            val postID = args.postId
+            Timber.d("Navigating to EditPostScreen with postId: $postID")
+            EditPostScreen(
+                onBack = {
+                    navController.popBackStack()
+                }, postId = postID
+            )
+
         }
     }
 }

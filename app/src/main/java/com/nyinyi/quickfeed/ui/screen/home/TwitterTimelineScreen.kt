@@ -66,6 +66,7 @@ fun TwitterTimelineScreen(
     onClickLike: (String) -> Unit = {},
     onClickUnLike: (String) -> Unit = {},
     onDeleteTweet: (Post) -> Unit = {},
+    onEditTweet: (String) -> Unit = {},
 ) {
     val lazyListState = rememberLazyListState()
     var isImagViewerVisible by remember { mutableStateOf(false) }
@@ -275,6 +276,9 @@ fun TwitterTimelineScreen(
                                 onDeleteTweet = {
                                     onDeleteTweet(post)
                                 },
+                                onEditTweet = { post ->
+                                    onEditTweet(post.id)
+                                }
                             )
                         }
                     }

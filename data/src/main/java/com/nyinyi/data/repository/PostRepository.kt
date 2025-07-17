@@ -22,4 +22,12 @@ interface PostRepository {
     suspend fun unlikePost(postId: String): Result<Unit>
 
     suspend fun deletePost(post: Post): Result<Unit>
+
+    suspend fun getPostById(postId: String): Result<Post?>
+
+    suspend fun updatePostById(
+        postId: String,
+        text: String,
+        imageInputStream: InputStream?
+    ): Result<Unit>
 }

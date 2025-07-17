@@ -26,4 +26,9 @@ sealed interface Routes {
 
     @Serializable
     data object CreatePostScreen : Routes
+
+    @Serializable
+    data class EditPostScreen(
+        val postId: String
+    ) : Routes
 }

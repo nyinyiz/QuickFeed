@@ -23,6 +23,7 @@ fun HomeScreen(
     onClickCreatePost: () -> Unit = {},
     onClickSetting: () -> Unit = {},
     onClickProfile: () -> Unit = {},
+    onEditTweet: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var dialogState by remember { mutableStateOf(DialogState()) }
@@ -123,5 +124,6 @@ fun HomeScreen(
             deletePost = post
             deletePostConfirmationDialog = true
         },
+        onEditTweet = onEditTweet
     )
 }

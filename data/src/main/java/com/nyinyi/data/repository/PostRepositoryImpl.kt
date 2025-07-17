@@ -22,283 +22,322 @@ import java.io.InputStream
 import javax.inject.Inject
 
 class PostRepositoryImpl
-    @Inject
-    constructor(
-        private val auth: FirebaseAuth,
-        private val firestore: FirebaseFirestore,
-        private val supabaseStorage: Storage,
-    ) : PostRepository {
-        private val usersCollection = firestore.collection("users")
-        private val postsCollection = firestore.collection("posts")
-        private val timeLinePostBucket = "timeline-post"
+@Inject
+constructor(
+    private val auth: FirebaseAuth,
+    private val firestore: FirebaseFirestore,
+    private val supabaseStorage: Storage,
+) : PostRepository {
+    private val usersCollection = firestore.collection("users")
+    private val postsCollection = firestore.collection("posts")
+    private val timeLinePostBucket = "timeline-post"
 
-        override fun getCurrentUserId(): String? = auth.currentUser?.uid
+    override fun getCurrentUserId(): String? = auth.currentUser?.uid
 
-        override suspend fun getCurrentUserProfile(): Result<UserProfile?> {
-            val userId =
-                getCurrentUserId() ?: return Result.failure(
-                    FirebaseAuthException(
-                        "NO_USER",
-                        "No user logged in.",
-                    ),
+    override suspend fun getCurrentUserProfile(): Result<UserProfile?> {
+        val userId =
+            getCurrentUserId() ?: return Result.failure(
+                FirebaseAuthException(
+                    "NO_USER",
+                    "No user logged in.",
+                ),
+            )
+
+        return try {
+            val doc = usersCollection.document(userId).get().await()
+            if (doc.exists()) {
+                val profile =
+                    UserProfile(
+                        userId = doc.getString("userId") ?: "",
+                        username = doc.getString("username") ?: "",
+                        handle = doc.getString("handle") ?: "",
+                        email = doc.getString("email") ?: auth.currentUser?.email ?: "",
+                        profilePictureUrl = doc.getString("profilePictureUrl"),
+                        likedPosts = doc.get("likedPosts") as? List<String> ?: emptyList(),
+                        createdAt = doc.getTimestamp("createdAt")?.seconds ?: 0L,
+                    )
+                Result.success(profile)
+            } else {
+                Result.success(null)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun createPost(
+        text: String,
+        imageInputStream: InputStream?,
+    ): Result<Unit> =
+        try {
+            var imageUrl: String? = null
+            val postId = postsCollection.document().id
+
+            if (imageInputStream != null) {
+                val postImageUrl = uploadPostImageToSupabase(postId, imageInputStream)
+                imageUrl = postImageUrl
+            }
+
+            val postDto =
+                Post(
+                    id = postId,
+                    content = text,
+                    imageUrl = imageUrl,
+                    timestamp = Clock.System.now().epochSeconds,
+                    likeCount = 0,
+                    commentCount = 0,
+                    authorUid = getCurrentUserId()!!,
+                    authorUsername = getCurrentUserProfile().getOrNull()?.username ?: "",
+                    authorHandle = getCurrentUserProfile().getOrNull()?.handle ?: "",
+                    authorProfilePictureUrl = getCurrentUserProfile().getOrNull()?.profilePictureUrl,
+                    isLiked = false,
                 )
 
-            return try {
-                val doc = usersCollection.document(userId).get().await()
-                if (doc.exists()) {
-                    val profile =
-                        UserProfile(
-                            userId = doc.getString("userId") ?: "",
-                            username = doc.getString("username") ?: "",
-                            handle = doc.getString("handle") ?: "",
-                            email = doc.getString("email") ?: auth.currentUser?.email ?: "",
-                            profilePictureUrl = doc.getString("profilePictureUrl"),
-                            likedPosts = doc.get("likedPosts") as? List<String> ?: emptyList(),
-                            createdAt = doc.getTimestamp("createdAt")?.seconds ?: 0L,
-                        )
-                    Result.success(profile)
-                } else {
-                    Result.success(null)
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
+            postsCollection.document(postId).set(postDto).await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
 
-        override suspend fun createPost(
-            text: String,
-            imageInputStream: InputStream?,
-        ): Result<Unit> =
-            try {
-                var imageUrl: String? = null
-                val postId = postsCollection.document().id
+    override suspend fun getTimelinePosts(): Flow<Result<List<Post>>> {
+        val currentUserId = getCurrentUserId()
+        if (currentUserId == null) {
+            return flowOf(Result.failure(Exception("No user logged in.")))
+        }
 
-                if (imageInputStream != null) {
-                    val postImageUrl = uploadPostImageToSupabase(postId, imageInputStream)
-                    imageUrl = postImageUrl
-                }
-
-                val postDto =
-                    Post(
-                        id = postId,
-                        content = text,
-                        imageUrl = imageUrl,
-                        timestamp = Clock.System.now().epochSeconds,
-                        likeCount = 0,
-                        commentCount = 0,
-                        authorUid = getCurrentUserId()!!,
-                        authorUsername = getCurrentUserProfile().getOrNull()?.username ?: "",
-                        authorHandle = getCurrentUserProfile().getOrNull()?.handle ?: "",
-                        authorProfilePictureUrl = getCurrentUserProfile().getOrNull()?.profilePictureUrl,
-                        isLiked = false,
-                    )
-
-                postsCollection.document(postId).set(postDto).await()
-
-                Result.success(Unit)
-            } catch (e: Exception) {
-                Result.failure(e)
+        val userFlow =
+            callbackFlow {
+                val listener =
+                    usersCollection
+                        .document(currentUserId)
+                        .addSnapshotListener { snapshot, error ->
+                            if (error != null) {
+                                trySend(Result.failure(error))
+                            } else {
+                                val likedPosts =
+                                    (snapshot?.get("likedPosts") as? List<String>) ?: emptyList()
+                                trySend(Result.success(likedPosts))
+                            }
+                        }
+                awaitClose { listener.remove() }
             }
 
-        override suspend fun getTimelinePosts(): Flow<Result<List<Post>>> {
-            val currentUserId = getCurrentUserId()
-            if (currentUserId == null) {
-                return flowOf(Result.failure(Exception("No user logged in.")))
-            }
-
-            val userFlow =
-                callbackFlow {
-                    val listener =
-                        usersCollection
-                            .document(currentUserId)
-                            .addSnapshotListener { snapshot, error ->
-                                if (error != null) {
-                                    trySend(Result.failure(error))
-                                } else {
-                                    val likedPosts =
-                                        (snapshot?.get("likedPosts") as? List<String>) ?: emptyList()
-                                    trySend(Result.success(likedPosts))
-                                }
-                            }
-                    awaitClose { listener.remove() }
-                }
-
-            val postsFlow =
-                callbackFlow {
-                    val listener =
-                        postsCollection
-                            .orderBy("timestamp", Query.Direction.DESCENDING)
-                            .addSnapshotListener { snapshot, error ->
-                                if (error != null) {
-                                    trySend(Result.failure(error))
-                                } else if (snapshot != null) {
-                                    val posts =
-                                        snapshot.documents.mapNotNull { doc ->
-                                            doc.toObject(Post::class.java)
-                                        }
-                                    trySend(Result.success(posts))
-                                }
-                            }
-                    awaitClose { listener.remove() }
-                }
-
-            return combine(userFlow, postsFlow) { userResult, postsResult ->
-                when {
-                    userResult.isFailure -> userResult.map { emptyList<Post>() }
-                    postsResult.isFailure -> postsResult
-                    else -> {
-                        try {
-                            val likedPostsIds = userResult.getOrNull() ?: emptyList()
-                            val posts = postsResult.getOrNull() ?: emptyList()
-
-                            val uniqueAuthorUids = posts.map { it.authorUid }.distinct()
-
-                            val userProfiles = mutableMapOf<String, UserProfile?>()
-                            uniqueAuthorUids.forEach { authorUid ->
-                                try {
-                                    val authorDoc = usersCollection.document(authorUid).get().await()
-                                    if (authorDoc.exists()) {
-                                        val profile =
-                                            UserProfile(
-                                                userId = authorDoc.getString("userId") ?: authorUid,
-                                                username = authorDoc.getString("username") ?: "",
-                                                handle = authorDoc.getString("handle") ?: "",
-                                                email = authorDoc.getString("email") ?: "",
-                                                profilePictureUrl = authorDoc.getString("profilePictureUrl"),
-                                                likedPosts = emptyList(),
-                                                createdAt =
-                                                    authorDoc.getTimestamp("createdAt")?.seconds
-                                                        ?: 0L,
-                                            )
-                                        userProfiles[authorUid] = profile
-                                    } else {
-                                        userProfiles[authorUid] = null
+        val postsFlow =
+            callbackFlow {
+                val listener =
+                    postsCollection
+                        .orderBy("timestamp", Query.Direction.DESCENDING)
+                        .addSnapshotListener { snapshot, error ->
+                            if (error != null) {
+                                trySend(Result.failure(error))
+                            } else if (snapshot != null) {
+                                val posts =
+                                    snapshot.documents.mapNotNull { doc ->
+                                        doc.toObject(Post::class.java)
                                     }
-                                } catch (e: Exception) {
-                                    Log.e(
-                                        "PostRepositoryImpl",
-                                        "Error fetching user data for UID: $authorUid",
-                                        e,
-                                    )
+                                trySend(Result.success(posts))
+                            }
+                        }
+                awaitClose { listener.remove() }
+            }
+
+        return combine(userFlow, postsFlow) { userResult, postsResult ->
+            when {
+                userResult.isFailure -> userResult.map { emptyList<Post>() }
+                postsResult.isFailure -> postsResult
+                else -> {
+                    try {
+                        val likedPostsIds = userResult.getOrNull() ?: emptyList()
+                        val posts = postsResult.getOrNull() ?: emptyList()
+
+                        val uniqueAuthorUids = posts.map { it.authorUid }.distinct()
+
+                        val userProfiles = mutableMapOf<String, UserProfile?>()
+                        uniqueAuthorUids.forEach { authorUid ->
+                            try {
+                                val authorDoc = usersCollection.document(authorUid).get().await()
+                                if (authorDoc.exists()) {
+                                    val profile =
+                                        UserProfile(
+                                            userId = authorDoc.getString("userId") ?: authorUid,
+                                            username = authorDoc.getString("username") ?: "",
+                                            handle = authorDoc.getString("handle") ?: "",
+                                            email = authorDoc.getString("email") ?: "",
+                                            profilePictureUrl = authorDoc.getString("profilePictureUrl"),
+                                            likedPosts = emptyList(),
+                                            createdAt =
+                                                authorDoc.getTimestamp("createdAt")?.seconds
+                                                    ?: 0L,
+                                        )
+                                    userProfiles[authorUid] = profile
+                                } else {
                                     userProfiles[authorUid] = null
                                 }
+                            } catch (e: Exception) {
+                                Log.e(
+                                    "PostRepositoryImpl",
+                                    "Error fetching user data for UID: $authorUid",
+                                    e,
+                                )
+                                userProfiles[authorUid] = null
+                            }
+                        }
+
+                        val postsWithUpdatedUserInfo =
+                            posts.map { post ->
+                                val authorProfile = userProfiles[post.authorUid]
+                                post.copy(
+                                    isLiked = likedPostsIds.contains(post.id),
+                                    authorUsername = authorProfile?.username ?: post.authorUsername,
+                                    authorHandle = authorProfile?.handle ?: post.authorHandle,
+                                    authorProfilePictureUrl =
+                                        authorProfile?.profilePictureUrl
+                                            ?: post.authorProfilePictureUrl,
+                                )
                             }
 
-                            val postsWithUpdatedUserInfo =
-                                posts.map { post ->
-                                    val authorProfile = userProfiles[post.authorUid]
-                                    post.copy(
-                                        isLiked = likedPostsIds.contains(post.id),
-                                        authorUsername = authorProfile?.username ?: post.authorUsername,
-                                        authorHandle = authorProfile?.handle ?: post.authorHandle,
-                                        authorProfilePictureUrl =
-                                            authorProfile?.profilePictureUrl
-                                                ?: post.authorProfilePictureUrl,
-                                    )
-                                }
-
-                            Result.success(postsWithUpdatedUserInfo)
-                        } catch (e: Exception) {
-                            Log.e("PostRepositoryImpl", "Error processing timeline posts", e)
-                            Result.failure(e)
-                        }
+                        Result.success(postsWithUpdatedUserInfo)
+                    } catch (e: Exception) {
+                        Log.e("PostRepositoryImpl", "Error processing timeline posts", e)
+                        Result.failure(e)
                     }
                 }
             }
         }
-
-        override suspend fun likePost(postId: String): Result<Unit> {
-            return try {
-                withContext(Dispatchers.IO) {
-                    val currentUserId = getCurrentUserId() ?: return@withContext
-                    firestore.runBatch { batch ->
-                        val postRef = postsCollection.document(postId)
-                        batch.update(postRef, "likeCount", FieldValue.increment(1))
-
-                        val userRef = usersCollection.document(currentUserId)
-                        batch.update(userRef, "likedPosts", FieldValue.arrayUnion(postId))
-
-                        Log.d("unlikePost", "Post liked successfully")
-                    }
-                }
-                Result.success(Unit)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-
-        override suspend fun unlikePost(postId: String): Result<Unit> {
-            return try {
-                withContext(Dispatchers.IO) {
-                    val currentUserId = getCurrentUserId() ?: return@withContext
-                    firestore.runBatch { batch ->
-                        val postRef = postsCollection.document(postId)
-                        batch.update(postRef, "likeCount", FieldValue.increment(-1))
-
-                        val userRef = usersCollection.document(currentUserId)
-                        batch.update(userRef, "likedPosts", FieldValue.arrayRemove(postId))
-
-                        Log.d("unlikePost", "Post unliked successfully")
-                    }
-                }
-                Result.success(Unit)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-
-        override suspend fun deletePost(post: Post): Result<Unit> {
-            val currentUserId =
-                getCurrentUserId() ?: return Result.failure(
-                    FirebaseAuthException(
-                        "NO_USER",
-                        "No user logged in.",
-                    ),
-                )
-
-            if (post.authorUid != currentUserId) {
-                return Result.failure(Exception("You are not authorized to delete this post."))
-            }
-
-            return try {
-                Log.d("deletePost", "Post deleted successfully")
-                if (post.imageUrl.isNullOrEmpty().not()) {
-                    val path = post.imageUrl!!.substringAfter("$timeLinePostBucket/")
-                    if (path.isNotEmpty() && path != post.imageUrl) {
-                        supabaseStorage.from(timeLinePostBucket).delete(listOf(path))
-                    }
-                }
-
-                postsCollection.document(post.id).delete().await()
-
-                Result.success(Unit)
-            } catch (e: Exception) {
-                Log.e("PostRepositoryImpl", "Error deleting post", e)
-                Result.failure(e)
-            }
-        }
-
-        private suspend fun uploadPostImageToSupabase(
-            postId: String,
-            imageInputStream: InputStream,
-        ): String =
-            withContext(Dispatchers.IO) {
-                try {
-                    val fileBytes = imageInputStream.readBytes()
-                    val fileExtension = "jpg"
-
-                    val timestamp = System.currentTimeMillis()
-                    val filePath = "posts/$postId/post_$timestamp.$fileExtension"
-
-                    val bucket = supabaseStorage.from(timeLinePostBucket)
-
-                    bucket.upload(path = filePath, data = fileBytes)
-
-                    val publicUrl = bucket.publicUrl(filePath)
-                    publicUrl
-                } catch (e: Exception) {
-                    Log.e("UserRepositoryImpl", "Error uploading to Supabase Storage", e)
-                    throw e
-                }
-            }
     }
+
+    override suspend fun likePost(postId: String): Result<Unit> {
+        return try {
+            withContext(Dispatchers.IO) {
+                val currentUserId = getCurrentUserId() ?: return@withContext
+                firestore.runBatch { batch ->
+                    val postRef = postsCollection.document(postId)
+                    batch.update(postRef, "likeCount", FieldValue.increment(1))
+
+                    val userRef = usersCollection.document(currentUserId)
+                    batch.update(userRef, "likedPosts", FieldValue.arrayUnion(postId))
+
+                    Log.d("unlikePost", "Post liked successfully")
+                }
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun unlikePost(postId: String): Result<Unit> {
+        return try {
+            withContext(Dispatchers.IO) {
+                val currentUserId = getCurrentUserId() ?: return@withContext
+                firestore.runBatch { batch ->
+                    val postRef = postsCollection.document(postId)
+                    batch.update(postRef, "likeCount", FieldValue.increment(-1))
+
+                    val userRef = usersCollection.document(currentUserId)
+                    batch.update(userRef, "likedPosts", FieldValue.arrayRemove(postId))
+
+                    Log.d("unlikePost", "Post unliked successfully")
+                }
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deletePost(post: Post): Result<Unit> {
+        val currentUserId =
+            getCurrentUserId() ?: return Result.failure(
+                FirebaseAuthException(
+                    "NO_USER",
+                    "No user logged in.",
+                ),
+            )
+
+        if (post.authorUid != currentUserId) {
+            return Result.failure(Exception("You are not authorized to delete this post."))
+        }
+
+        return try {
+            Log.d("deletePost", "Post deleted successfully")
+            if (post.imageUrl.isNullOrEmpty().not()) {
+                val path = post.imageUrl!!.substringAfter("$timeLinePostBucket/")
+                if (path.isNotEmpty() && path != post.imageUrl) {
+                    supabaseStorage.from(timeLinePostBucket).delete(listOf(path))
+                }
+            }
+
+            postsCollection.document(post.id).delete().await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("PostRepositoryImpl", "Error deleting post", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getPostById(postId: String): Result<Post?> {
+        return try {
+            val postList = postsCollection.whereEqualTo("id", postId).get().await()
+            val postDetail = postList.documents.firstOrNull()?.toObject(Post::class.java)
+
+            if (postDetail == null) {
+                return Result.failure(
+                    Exception("Post with ID $postId not found."),
+                )
+            } else {
+
+                Result.success(postDetail)
+            }
+        } catch (e: Exception) {
+            Log.e("PostRepositoryImpl", "Error processing timeline posts", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updatePostById(
+        postId: String,
+        text: String,
+        imageInputStream: InputStream?
+    ): Result<Unit> {
+
+        return try {
+            firestore.runBatch { batch ->
+                val postRef = postsCollection.document(postId)
+                batch.update(postRef, "content", text)
+
+                //TODO: Image uploading
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun uploadPostImageToSupabase(
+        postId: String,
+        imageInputStream: InputStream,
+    ): String =
+        withContext(Dispatchers.IO) {
+            try {
+                val fileBytes = imageInputStream.readBytes()
+                val fileExtension = "jpg"
+
+                val timestamp = System.currentTimeMillis()
+                val filePath = "posts/$postId/post_$timestamp.$fileExtension"
+
+                val bucket = supabaseStorage.from(timeLinePostBucket)
+
+                bucket.upload(path = filePath, data = fileBytes)
+
+                val publicUrl = bucket.publicUrl(filePath)
+                publicUrl
+            } catch (e: Exception) {
+                Log.e("UserRepositoryImpl", "Error uploading to Supabase Storage", e)
+                throw e
+            }
+        }
+}
