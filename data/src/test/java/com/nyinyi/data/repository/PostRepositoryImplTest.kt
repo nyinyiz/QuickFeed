@@ -75,6 +75,20 @@ class PostRepositoryImplTest {
             isLiked = false,
         )
 
+    private val postDetail = Post(
+        id = testPostId,
+        content = "Test post content",
+        imageUrl = "https://example.com/image.jpg",
+        timestamp = 1234567890L,
+        likeCount = 5,
+        commentCount = 2,
+        authorUid = testUserId,
+        authorUsername = "testuser",
+        authorHandle = "@testuser",
+        authorProfilePictureUrl = "https://example.com/profile.jpg",
+        isLiked = false,
+    )
+
     @Before
     fun setup() {
         auth = mockk()
@@ -117,6 +131,23 @@ class PostRepositoryImplTest {
     }
 
     @Test
+    fun `getPostbyId returns post when post exists`() {
+        runBlocking {
+
+            every { postDocument.id } returns testPostId
+            every { postDocument.get() } returns Tasks.forResult(postDocumentSnapshot)
+
+            val result = repository.getPostById(testPostId)
+            verify {
+                postDocument.get()
+            }
+
+            assertEquals(testPost, result)
+        }
+
+    }
+
+    @Test
     fun `getCurrentUserId returns user id when user is logged in`() {
         // Given
         every { auth.currentUser } returns firebaseUser
@@ -156,10 +187,10 @@ class PostRepositoryImplTest {
             every { userDocumentSnapshot.getString("email") } returns "test@example.com"
             every { userDocumentSnapshot.getString("profilePictureUrl") } returns "https://example.com/profile.jpg"
             every { userDocumentSnapshot.get("likedPosts") } returns
-                listOf(
-                    "liked_post_1",
-                    "liked_post_2",
-                )
+                    listOf(
+                        "liked_post_1",
+                        "liked_post_2",
+                    )
             every { userDocumentSnapshot.getTimestamp("createdAt")?.seconds } returns 1234567890L
 
             // When
@@ -251,7 +282,6 @@ class PostRepositoryImplTest {
             verify { postDocument.set(any()) }
             coVerify { bucketApi.upload(any<String>(), any<ByteArray>()) }
         }
-
     @Test
     fun `deletePost successfully deletes post without image`() =
         runBlocking {
@@ -268,6 +298,7 @@ class PostRepositoryImplTest {
             assertTrue(result.isSuccess)
             verify { postDocument.delete() }
         }
+
 
     @Test
     fun `deletePost successfully deletes post with image`() =
